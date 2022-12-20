@@ -13,7 +13,7 @@ def generate_text(prompt, model="text-davinci-003", temperature=0.5, n=1):
 def refine_text(text, refine_by):
     if refine_by =="":
         refine_by = "make general improvements"
-    prompt = f"[{text}] \n improve the text above in the following way: {refine_by}\n"
+    prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
     critique_text = generate_text(prompt)
     print(critique_text)
     prompt = f"[{text}]\n rewrite the text in brackets above, by addressing the following issues: \n{critique_text}\n\n"
