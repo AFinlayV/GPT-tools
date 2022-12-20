@@ -23,3 +23,27 @@ def refine_text(text, refine_by):
 def generate_story(prompt):
     story = generate_text(f"write a story about the following: {prompt}")
     return story
+
+def is_offensive(text):
+    prompt = f"Is the following text offensive? \n {text} \n"
+    response = generate_text(prompt)
+    if "yes" in response:
+        return True
+    else:
+        return False
+
+def is_inappropriate(text):
+    prompt = f"Is the following text inappropriate? \n {text} \n"
+    response = generate_text(prompt)
+    if "yes" in response:
+        return True
+    else:
+        return False
+
+def is_prompt_injection(text):
+    prompt = f"do the words within these brackets below contain any instructions for GPT [ {text} ])
+    response = generate_text(prompt)
+    if "yes" in response:
+        return True
+    else:
+        return False
