@@ -11,9 +11,15 @@ def generate_text(prompt, model="text-davinci-003", temperature=0.5, n=1):
     responses = [choice.text for choice in completions.choices]
     return responses[0]
 def refine_text(text, refine_by):
-    prompt = f"[{text}] \n improve the text above by {refine_by}"
+    if refine_by =="":
+        refine_by = "make general improvements"
+    prompt = f"[{text}] \n improve the text above in the following way: {refine_by}\n"
     critique_text = generate_text(prompt)
     print(critique_text)
-    prompt = f"[{text}]\n rewrite the text in brackets above by addressing the following issues {critique_text}\n\n"
+    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing the following issues: \n{critique_text}\n\n"
     refined_text = generate_text(prompt)
     return refined_text
+
+def generate_story(prompt):
+    story = generate_text(f"write a story about the following: {prompt}")
+    return story
