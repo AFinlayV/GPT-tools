@@ -1,8 +1,11 @@
 import gptools as ai
 
 ai.api_login()
-prompt = input("Enter a prompt: ")
-text = ai.generate_story(prompt)
+plot = input("Enter a plot: ")
+themes = input("Enter themes: ")
+characters = input("Enter characters: ")
+setting = input("Enter setting: ")
+text = ai.generate_story(plot, themes, characters, setting)
 print(text)
 while True:
     refine_by = input("Enter a refinement: ")
