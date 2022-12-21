@@ -1,18 +1,16 @@
 import gptools as ai
 
 ai.api_login()
-plot = input("Enter a plot: ")
-themes = input("Enter themes: ")
-characters = input("Enter characters: ")
-setting = input("Enter setting: ")
-text = ai.generate_story(plot, themes, characters, setting)
-print(text)
-while True:
-    refine_by = input("Enter a refinement: ")
-    refined_text = ai.refine_text(text, refine_by)
-    print(refined_text)
-    user_input = input("Would you like to refine again? (y/n): ")
-    if user_input == "y":
-        text = refined_text
-    elif user_input == "n":
-        break
+class story
+    def __init__(self, plot, themes, characters, setting):
+        self.plot = plot
+        self.themes = themes
+        self.characters = characters
+        self.setting = setting
+        self.story = ai.generate_story(plot, themes, characters, setting)
+        self.refined_story = ai.refine_text(self.story, "make general improvements")
+        self.character_descriptions = ai.generate_character_descriptions(self.refined_story)
+        self.image_prompts = ai.generate_character_image_prompts(self.character_descriptions)
+        self.images = ai.generate_images(self.image_prompts)
+        self.storybook = ai.generate_storybook(self.refined_story, self.character_descriptions, self.images)
+        self.storybook.save("storybook.pdf")
