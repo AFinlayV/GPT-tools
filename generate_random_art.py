@@ -24,5 +24,8 @@ print(len(styles))
 for prompt in prompts:
     style = random.choice(styles)
     print(prompt, style)
-    ai.generate_image_from_text(prompt,style, f"/Users/alexthe5th/Pictures/AI Art/{prompt+style}.png")
+    filename = f"{prompt} {style}"
+    if len(filename) > 200:
+        filename = filename[:200]
+    ai.generate_image_from_text(prompt,style, f"/Users/alexthe5th/Pictures/AI Art/{filename}.png")
 
