@@ -122,8 +122,10 @@ def generate_image_from_text(prompt, style, filename):
         r = requests.get(url, allow_redirects=True)
         open(filename, 'wb').write(r.content)
         print(f"Image saved: {filename}")
-    except:
-        print(f"Image generation failed:\n {prompt} \n {style}\n")
+    except Exception as e:
+        print(f"{e}\nImage generation failed:\n {prompt} \n {style}\n trying again in 10 seconds...")
+        time.sleep(10)
+        generate_image_from_text(prompt, style, filename)
 
 
 
