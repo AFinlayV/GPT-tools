@@ -1,6 +1,7 @@
 import openai
 import dalle2
 import requests
+import time
 import json
 
 
@@ -13,27 +14,45 @@ def api_login():
 
 
 def generate_text(prompt, model="text-davinci-003", temperature=0.7, n=1):
-    completions = openai.Completion.create(engine=model, prompt=prompt, max_tokens=1024, temperature=temperature, n=n)
-    responses = [choice.text for choice in completions.choices]
-    return responses[0]
+    try:
+        completions = openai.Completion.create(engine=model, prompt=prompt, max_tokens=1024, temperature=temperature, n=n)
+        responses = [choice.text for choice in completions.choices]
+        return responses[0]
+    except:
+        print(f"Text generation failed:\n {prompt}\n trying again in 10 seconds...")
+        time.sleep(10)
+        generate_text(prompt, model, temperature, n)
+
+
+
 
 
 def generate_text_from_image(image, model="text-davinci-003", temperature=0.5, n=1):
-    completions = dalle2.generate_text(image, model=model, temperature=temperature, n=n)
-    responses = [choice.text for choice in completions.choices]
-    return responses[0]
+    try:
+        completions = dalle2.generate_text(image, model=model, temperature=temperature, n=n)
+        responses = [choice.text for choice in completions.choices]
+        return responses[0]
+    except:
+        print(f"Text generation failed:\n {image}\n trying again in 10 seconds...")
+        time.sleep(10)
+        generate_text_from_image(image, model, temperature, n)
 
 
 
 def refine_text(text, refine_by):
-    if refine_by == "":
-        refine_by = "make general improvements"
-    prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
-    critique_text = generate_text(prompt)
-    print(critique_text)
-    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n\n"
-    refined_text = generate_text(prompt)
-    return refined_text
+    try:
+        if refine_by == "":
+            refine_by = "make general improvements"
+        prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
+        critique_text = generate_text(prompt)
+        print(critique_text)
+        prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n\n"
+        refined_text = generate_text(prompt)
+        return refined_text
+    except:
+        print(f"Text refinement failed:\n {text}\n trying again in 10 seconds...")
+        time.sleep(10)
+        refine_text(text, refine_by)
 
 
 def generate_story(plot, themes, characters, setting):
