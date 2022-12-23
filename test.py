@@ -1,16 +1,19 @@
 import gptools as ai
+import random
+
 
 ai.api_login()
-class story
-    def __init__(self, plot, themes, characters, setting):
-        self.plot = plot
-        self.themes = themes
-        self.characters = characters
-        self.setting = setting
-        self.story = ai.generate_story(plot, themes, characters, setting)
-        self.refined_story = ai.refine_text(self.story, "make general improvements")
-        self.character_descriptions = ai.generate_character_descriptions(self.refined_story)
-        self.image_prompts = ai.generate_character_image_prompts(self.character_descriptions)
-        self.images = ai.generate_images(self.image_prompts)
-        self.storybook = ai.generate_storybook(self.refined_story, self.character_descriptions, self.images)
-        self.storybook.save("storybook.pdf")
+prompts = ai.generate_text("Make a list of 100 descriptions of beautiful images")
+styles = ai.generate_text("Make a list of 20 visual art styles")
+#format the prompts as a list
+styles = styles.split("\n")
+prompts = prompts.split("\n")
+# remove empty list items
+styles = [style for style in styles if style != ""]
+prompts = [prompt for prompt in prompts if prompt != ""]
+print(prompts)
+for prompt in prompts:
+    style = random.choice(styles)
+    print(prompt, style)
+    ai.generate_image_from_text(prompt,style, f"{prompt+style}.png")
+

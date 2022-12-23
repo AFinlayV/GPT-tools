@@ -1,6 +1,7 @@
 import openai
 import dalle2
 import requests
+import json
 
 
 def api_login():
@@ -11,10 +12,17 @@ def api_login():
     dalle2.api_key = api_key
 
 
-def generate_text(prompt, model="text-davinci-003", temperature=0.5, n=1):
+def generate_text(prompt, model="text-davinci-003", temperature=0.7, n=1):
     completions = openai.Completion.create(engine=model, prompt=prompt, max_tokens=1024, temperature=temperature, n=n)
     responses = [choice.text for choice in completions.choices]
     return responses[0]
+
+
+def generate_text_from_image(image, model="text-davinci-003", temperature=0.5, n=1):
+    completions = dalle2.generate_text(image, model=model, temperature=temperature, n=n)
+    responses = [choice.text for choice in completions.choices]
+    return responses[0]
+
 
 
 def refine_text(text, refine_by):
@@ -81,27 +89,25 @@ def check_text(text):
     return check
 
 
-def generate_image_prompt(text):
-    prompt = f"generate an image prompt for DALL-E2 from the following text: \n {text} \n"
-    response = generate_text(prompt)
-    return response
+def generate_image_from_text(prompt, style, filename):
+    try:
+        full_prompt = f"{prompt} {style}"
+        if len(full_prompt) > 400:
+            prompt = prompt[:400]
+        response = openai.Image.create(
+            prompt=full_prompt,
+            n=1,
+            size="1024x1024"
+        )
+        url = response["data"][0]["url"]
+        r = requests.get(url, allow_redirects=True)
+        open(filename, 'wb').write(r.content)
+        print(f"Image saved: {filename}")
+    except:
+        print(f"Image generation failed:\n {prompt} \n {style}\n")
 
 
-def generate_image(prompt, style, filename):
-    if check(prompt):
-        print("This prompt is OK")
-    else:
-        print("This prompt is not allowed")
-    image_response = openai.Image.create(
-        prompt=prompt + style,
-        n=1,
-        size="1024x1024"
-    )
-    image_url = image_response["data"][0]["url"]
-    print(image_url)
-    # download the image from the address stored in image_url
-    image = requests.get(image_url)
-    # save the image to a file
-    with open(filename, "wb") as f:
-        f.write(image.content)
+
+
+
 
