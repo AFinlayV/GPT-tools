@@ -9,6 +9,10 @@ API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 Utility functions
 
 
+get_api_key() - returns the api key from the text file
+save_text(text, filename) - saves text to a text file
+load_text(filename) - loads text from a text file
+
 """
 
 
@@ -33,6 +37,15 @@ def load_text(filename):
 
 """
 Generative functions
+
+
+generate_text() - generates text using the OpenAI API
+generate_image_from_text() - generates an image from text using the OpenAI API
+generate_story() - generates a story using the OpenAI API
+generate_screenplay() - generates a screenplay using the OpenAI API
+generate_title() - generates a title using the OpenAI API
+generate_list() - generates a list using the OpenAI API
+generate_reply() - generates a reply using the OpenAI API
 
 
 """
@@ -117,6 +130,12 @@ def generate_reply(message, context, style="Email reply, business, casual"):
 Modifier functions
 
 
+refine_text() - refines text using the OpenAI API
+summarize_text() - summarizes text using the OpenAI API
+elaborate_text() - elaborates text using the OpenAI API
+restyle_text() - restyles text using the OpenAI API
+
+
 """
 
 
@@ -154,6 +173,10 @@ def restyle_text(text, style):
 """
 Analysis functions
 
+
+analyze_text() - analyzes text using the OpenAI API
+is_prompt_injection() - checks if a prompt is an injection attack using the OpenAI API
+sentiment_analysis() - analyzes sentiment using the OpenAI API
 """
 
 
