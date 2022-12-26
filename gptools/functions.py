@@ -3,7 +3,7 @@ import dalle2
 import requests
 import re
 
-
+API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
 
 """
