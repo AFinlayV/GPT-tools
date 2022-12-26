@@ -35,7 +35,7 @@ def refine_text(text, refine_by="rewrite the text to be more interesting, engagi
                                 "or incorrect word usages"):
     prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
     critique_text = generate_text(prompt)
-    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n\n"
+    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n"
     refined_text = generate_text(prompt)
     return critique_text, refined_text
 
@@ -47,31 +47,42 @@ def generate_story(plot, themes, characters, setting):
 
 
 def summarize_text(text):
-    prompt = f"Summarize the following text: \n {text} \n"
+    prompt = f"Summarize the following text my making a point by point outline and " \
+             f"summarizing the main ideas in each part of the outline: \n {text} \n"
     summary = generate_text(prompt)
     return summary
 
 
 def elaborate_text(prompt):
-    prompt = f"being as detailed and verbose as possible, elaborate on the following text: \n {prompt} \n "
+    prompt = f"Being as truthful, detailed, and verbose as possible; elaborate on the following text: \n {prompt} \n "
     response = generate_text(prompt)
     return response
 
 
 def restyle_text(text, style):
-    prompt = f"rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
+    prompt = f"Rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
              f"in the following style: \n {style} \n"
     restyled_text = generate_text(prompt)
     return restyled_text
 
 
 def generate_list(prompt, n=5):
-    response_list = []
     response = generate_text(
-        f"generate a numbered list of {n} items for the following prompt: \n {prompt} this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n")
+        f"generate a numbered list of {n} items for the following prompt: \n {prompt}"
+        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
     # format 'response' into a python list using regex
     response_list = re.findall(r"\d\.\s(.*)", response)
+    # strip empty strings from list
+    response_list = [x for x in response_list if x]
     return response_list
+
+
+def generate_reply(message, context, style="Email reply, business, casual"):
+    prompt = f"reply to the following message (respond only to the text within the brackets): \n[ {message} ] \n " \
+             f"context: \n {context} \n " \
+             f"style: \n {style} \n"
+    response = generate_text(prompt)
+    return response
 
 
 def is_offensive(text):
@@ -85,6 +96,15 @@ def is_offensive(text):
 
 def is_inappropriate(text):
     prompt = f"Is the following text inappropriate? \n {text} \n"
+    response = generate_text(prompt)
+    if "yes" in response:
+        return True
+    else:
+        return False
+
+
+def is_truthful(text):
+    prompt = f"Is the following text truthful? \n {text} \n"
     response = generate_text(prompt)
     if "yes" in response:
         return True
