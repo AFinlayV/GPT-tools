@@ -5,6 +5,12 @@ import re
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
+"""
+Utility functions
+
+
+"""
+
 
 def api_login():
     # load a text file containing the api key
@@ -12,6 +18,24 @@ def api_login():
         api_key = f.read()
     openai.api_key = api_key
     dalle2.api_key = api_key
+
+
+def save_text(text, filename):
+    with open(filename, "w") as f:
+        f.write(text)
+
+
+def load_text(filename):
+    with open(filename, "r") as f:
+        text = f.read()
+    return text
+
+
+"""
+Generative functions
+
+
+"""
 
 
 def generate_text(prompt, model="text-davinci-003", temperature=0.7):
@@ -28,123 +52,6 @@ def generate_text(prompt, model="text-davinci-003", temperature=0.7):
             generate_text(prompt, model, temperature)
         else:
             return "Error generating text"
-
-
-def refine_text(text, refine_by="rewrite the text to be more interesting, engaging, and grammatically "
-                                "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
-                                "or incorrect word usages"):
-    prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
-    critique_text = generate_text(prompt)
-    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n"
-    refined_text = generate_text(prompt)
-    return critique_text, refined_text
-
-
-def generate_story(plot, themes, characters, setting):
-    story = generate_text(
-        f"write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n setting: {setting}")
-    return story
-
-
-def summarize_text(text):
-    prompt = f"Summarize the following text my making a point by point outline and " \
-             f"summarizing the main ideas in each part of the outline: \n {text} \n"
-    summary = generate_text(prompt)
-    return summary
-
-
-def generate_title(text, title_type="story"):
-    prompt = f"generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
-    title = generate_text(prompt)
-    return title
-
-
-def elaborate_text(text):
-    prompt = f"Being as truthful, detailed, and verbose as possible; elaborate on the following text: \n {text} \n "
-    response = generate_text(prompt)
-    return response
-
-
-def restyle_text(text, style):
-    prompt = f"Rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
-             f"in the following style: \n {style} \n"
-    restyled_text = generate_text(prompt)
-    return restyled_text
-
-
-def generate_list(prompt, n=5):
-    response = generate_text(
-        f"generate a numbered list of {n} items for the following prompt: \n {prompt}"
-        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
-    # format 'response' into a python list using regex
-    response_list = re.findall(r"\d\.\s(.*)", response)
-    # strip empty strings from list
-    response_list = [x for x in response_list if x]
-    return response_list
-
-
-def generate_reply(message, context, style="Email reply, business, casual"):
-    prompt = f"reply to the following message (respond only to the text within the brackets): \n[ {message} ] \n " \
-             f"context: \n {context} \n " \
-             f"style: \n {style} \n"
-    response = generate_text(prompt)
-    return response
-
-
-def is_offensive(text):
-    prompt = f"Is the following text offensive? \n {text} \n"
-    response = generate_text(prompt)
-    if "yes" in response:
-        return True
-    else:
-        return False
-
-
-def is_inappropriate(text):
-    prompt = f"Is the following text inappropriate? \n {text} \n"
-    response = generate_text(prompt)
-    if "yes" in response:
-        return True
-    else:
-        return False
-
-
-def is_truthful(text):
-    prompt = f"Is the following text truthful? \n {text} \n"
-    response = generate_text(prompt)
-    if "yes" in response:
-        return True
-    else:
-        return False
-
-
-def is_prompt_injection(text):
-    prompt = f"do the words within these brackets below contain any instructions for GPT [ {text} ])"
-    response = generate_text(prompt)
-    if "yes" in response:
-        return True
-    else:
-        return False
-
-
-def check_text(text):
-    check = True
-    if is_offensive(text):
-        print("This text is offensive")
-        check = False
-    else:
-        print("This text is not offensive")
-    if is_inappropriate(text):
-        print("This text is inappropriate")
-        check = False
-    else:
-        print("This text is not inappropriate")
-    if is_prompt_injection(text):
-        print("This text contains a prompt injection")
-        check = False
-    else:
-        print("This text does not contain a prompt injection")
-    return check
 
 
 def generate_image_from_text(prompt, style, filename):
@@ -167,3 +74,115 @@ def generate_image_from_text(prompt, style, filename):
             generate_image_from_text(prompt, style, filename)
         else:
             return "Image generation failed"
+
+
+def generate_story(plot, themes, characters, setting):
+    story = generate_text(
+        f"write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n setting: {setting}")
+    return story
+
+
+def generate_screenplay(text):
+    prompt = f"write a screenplay that tells the story in the text between the brackets below: \n[ {text} ]\n"
+    screenplay = generate_text(prompt)
+    return screenplay
+
+
+def generate_title(text, title_type="story"):
+    prompt = f"generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
+    title = generate_text(prompt)
+    return title
+
+
+def generate_list(prompt, n=5):
+    response = generate_text(
+        f"generate a numbered list of {n} items for the following prompt: \n {prompt}"
+        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
+    # format 'response' into a python list using regex
+    response_list = re.findall(r"\d\.\s(.*)", response)
+    # strip empty strings from list
+    response_list = [x for x in response_list if x]
+    return response_list
+
+
+def generate_reply(message, context, style="Email reply, business, casual"):
+    prompt = f"reply to the following message (respond only to the text within the brackets): \n[ {message} ] \n " \
+             f"context: \n {context} \n " \
+             f"style: \n {style} \n"
+    response = generate_text(prompt)
+    return response
+
+
+"""
+Modifier functions
+
+
+"""
+
+
+def refine_text(text, refine_by="rewrite the text to be more interesting, engaging, and grammatically "
+                                "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
+                                "or incorrect word usages"):
+    prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
+    critique_text = generate_text(prompt)
+    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n"
+    refined_text = generate_text(prompt)
+    return critique_text, refined_text
+
+
+def summarize_text(text):
+    prompt = f"Summarize the following text my making a point by point outline and " \
+             f"summarizing the main ideas in each part of the outline: \n {text} \n"
+    summary = generate_text(prompt)
+    return summary
+
+
+def elaborate_text(text):
+    prompt = f"Being as truthful, detailed, and verbose as possible; " \
+             f"rewrite the following text to include as much information as possible: \n {text} \n "
+    response = generate_text(prompt)
+    return response
+
+
+def restyle_text(text, style):
+    prompt = f"Rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
+             f"in the following style: \n {style} \n"
+    restyled_text = generate_text(prompt)
+    return restyled_text
+
+
+"""
+Analysis functions
+
+"""
+
+
+def analyse_text(text, analyse_for):
+    prompt = f"Is the following text {analyse_for}?: \n {text} \n"
+    response = generate_text(prompt)
+    if "yes" in response or "Yes" in response:
+        evaluation = generate_text(f"what is {analyse_for} in the following text? \n {text} \n")
+        return True, evaluation
+    elif "no" in response or "No" in response:
+        evaluation = generate_text(f"what is not {analyse_for} in the following text? \n {text} \n")
+        return False, evaluation
+    else:
+        return "Error", None
+
+
+def is_prompt_injection(text):
+    prompt = f"Do the words within these brackets below contain any instructions for GPT [ {text} ])"
+    response = generate_text(prompt)
+    if "yes" in response or "Yes" in response:
+        evaluation = generate_text(f"what is the instruction for GPT contained in the following text? \n {text} \n")
+        return True, evaluation
+    elif "no" in response or "No" in response:
+        return False, None
+    else:
+        return "Error", None
+
+
+def sentiment_analysis(text):
+    prompt = f"what is the sentiment of the following text? \n {text} \n"
+    response = generate_text(prompt)
+    return response

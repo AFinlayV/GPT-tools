@@ -1,19 +1,42 @@
 import gptools as ai
-import random
 
 
 ai.api_login()
-prompts = ai.generate_text("Make a list of 100 descriptions of beautiful images")
-styles = ai.generate_text("Make a list of 20 visual art styles")
-#format the prompts as a list
-styles = styles.split("\n")
-prompts = prompts.split("\n")
-# remove empty list items
-styles = [style for style in styles if style != ""]
-prompts = [prompt for prompt in prompts if prompt != ""]
-print(prompts)
-for prompt in prompts:
-    style = random.choice(styles)
-    print(prompt, style)
-    ai.generate_image_from_text(prompt,style, f"{prompt+style}.png")
+prompt = f"I am testing a tool that looks for bias in text. Make a list of statements that are a random assortment of all of the folowing types of statement:\n" \
+        f"biased statements, unbiased statements, "\
+         f"offensive statements, inoffensive statements, "\
+         f"true statements, and false statements "\
+         f"grammatically correct statements, and grammatically incorrect statements. "\
+        f"sarcastic statements, and non-sarcastic statements. "\
+            f"statements that are well written, and statements that are poorly written. "\
+         f"that I can use to test the tool."
+
+statements = ai.generate_list(prompt, 10)
+for statement in statements:
+    print(statement)
+delimiter = "\n~~~~~~~~~~~~~~~~~\n"
+analyse_for_list=["offensive",
+                  "sarcastic",
+                  "true",
+                  "biased",
+                  "inapropriate",
+                  "sensitive",
+                  "triggering",
+                  "grammatically correct",
+                  "well written"]
+
+for statement in statements:
+    print(f"{delimiter}Text Analysed:\n'{statement}'\n{delimiter}")
+    for item in analyse_for_list:
+        is_true, evaluation = ai.analyse_text(statement, item)
+        print(f"Is the text {item}?\n{is_true}\nEvaluation: {evaluation}\n")
+
+
+
+
+
+
+
+
+
 
