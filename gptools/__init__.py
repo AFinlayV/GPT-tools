@@ -52,9 +52,14 @@ def summarize_text(text):
     summary = generate_text(prompt)
     return summary
 
+def generate_title(text, title_type="story"):
+    prompt = f"generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
+    title = generate_text(prompt)
+    return title
 
-def elaborate_text(prompt):
-    prompt = f"Being as truthful, detailed, and verbose as possible; elaborate on the following text: \n {prompt} \n "
+
+def elaborate_text(text):
+    prompt = f"Being as truthful, detailed, and verbose as possible; elaborate on the following text: \n {text} \n "
     response = generate_text(prompt)
     return response
 
