@@ -64,6 +64,7 @@ def append_text(text, filename):
     with open(filename, "a") as f:
         f.write(text)
 
+
 def load_text(filename):
     """
     Loads text from a text file
@@ -86,6 +87,7 @@ A set of functions that use the OpenAI API to generate text, images, and stories
 
 generate_text() - generates text using the OpenAI API
 generate_image_from_text() - generates an image from text using the OpenAI API
+generate_image_prompt() - generates a prompt for generating an image from text using the OpenAI API
 generate_story() - generates a story using the OpenAI API
 generate_screenplay() - generates a screenplay using the OpenAI API
 generate_title() - generates a title using the OpenAI API
@@ -155,6 +157,27 @@ def generate_image_from_text(prompt, style, filename):
             return "Image generation failed"
 
 
+def generate_image_prompt(text, style):
+    """
+    Generates a prompt for generating an image from text using the OpenAI API
+    :param text:
+    :param style:
+    :return:
+    Example usage:
+    text = "generate an image of a cat"
+    style = "photo-realistic"
+    prompt = generate_image_prompt(text, style)
+    print(prompt)
+    """
+    prompt = f"Given the text in brackets below: \n[{text}] \n\n Generate a prompt for DallE2 to generate an image. " \
+             f"The language in the prompt should be short, visually descriptive phrases, and separated by commas."
+    image_prompt = generate_text(prompt)
+    image_style = generate_text(f"Given the style in brackets below: \n[{style}] \n\n Generate a series of visual "
+                                f"descriptions of the style separated by commas. ")
+    full_prompt = f"{image_prompt}. {image_style}"
+    return full_prompt
+
+
 def generate_story(plot, themes, characters, setting):
     """
     Generates a story using the OpenAI API
@@ -222,8 +245,8 @@ def generate_list(prompt, n=5):
     response = generate_text(
         f"Generate a numbered list of {n} items for the following prompt: \n {prompt}"
         f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
-    response_list = re.findall(r"\d\.\s(.*)", response) # regex to extract list items from response text
-    response_list = [x for x in response_list if x] # remove empty strings
+    response_list = re.findall(r"\d\.\s(.*)", response)  # regex to extract list items from response text
+    response_list = [x for x in response_list if x]  # remove empty strings
     return response_list
 
 
@@ -277,7 +300,7 @@ def refine_text(text, refine_by="more interesting, engaging, and grammatically "
     critique_text = generate_text(prompt)
     prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n"
     refined_text = generate_text(prompt)
-    return critique_text, refined_text
+    return refined_text, critique_text
 
 
 def summarize_text(text):
