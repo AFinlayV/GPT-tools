@@ -8,11 +8,12 @@ API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 """
 Utility functions
 
+A set of basic functions that are useful for working with GPT-3 and DALL-E.
+
 
 get_api_key() - returns the api key from the text file
 save_text(text, filename) - saves text to a text file
 load_text(filename) - loads text from a text file
-
 """
 
 
@@ -21,7 +22,8 @@ def api_login(api_key_path=API_KEY_PATH):
     Logs into the OpenAI API
     using the path to a text file containing the API key
     Example usage:
-    api_login("/Users/username/Documents/API Keys/OpenAI_API_key.txt")
+    API_KEY_PATH = "/Users/User/API Keys/OpenAI_API_key.txt"
+    api_login(API_KEY_PATH)
     """
     # load a text file containing the api key
     with open(api_key_path, "r") as f:
@@ -62,6 +64,8 @@ def load_text(filename):
 """
 Generative functions
 
+A set of functions that use the OpenAI API to generate text, images, and stories.
+
 
 generate_text() - generates text using the OpenAI API
 generate_image_from_text() - generates an image from text using the OpenAI API
@@ -70,8 +74,6 @@ generate_screenplay() - generates a screenplay using the OpenAI API
 generate_title() - generates a title using the OpenAI API
 generate_list() - generates a list using the OpenAI API
 generate_reply() - generates a reply using the OpenAI API
-
-
 """
 
 
@@ -153,7 +155,7 @@ def generate_story(plot, themes, characters, setting):
     print(story)
     """
     story = generate_text(
-        f"write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n setting: {setting}")
+        f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n setting: {setting}")
     return story
 
 
@@ -167,12 +169,12 @@ def generate_screenplay(text):
     screenplay = generate_screenplay(text)
     print(screenplay)
     """
-    prompt = f"write a screenplay that tells the story in the text between the brackets below: \n[ {text} ]\n"
+    prompt = f"Write a screenplay that tells the story in the text between the brackets below: \n[ {text} ]\n"
     screenplay = generate_text(prompt)
     return screenplay
 
 
-def generate_title(text, title_type="story"):
+def generate_title(text, title_type):
     """
     Generates a title using the OpenAI API
     :param text:
@@ -180,10 +182,11 @@ def generate_title(text, title_type="story"):
     :return:
     Example usage:
     text = "A dilaogue between two characters discussing the history of Artificial Intelligence"
+    title_type = "movie"
     title = generate_title(text)
     print(title)
     """
-    prompt = f"generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
+    prompt = f"Generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
     title = generate_text(prompt)
     return title
 
@@ -195,21 +198,19 @@ def generate_list(prompt, n=5):
     :param n:
     :return:
     Example usage:
-    prompt = "generate a list of 5 things that are blue"
-    list = generate_list(prompt)
+    prompt = "things that are blue"
+    list = generate_list(prompt, 5)
     print(list)
     """
     response = generate_text(
-        f"generate a numbered list of {n} items for the following prompt: \n {prompt}"
+        f"Generate a numbered list of {n} items for the following prompt: \n {prompt}"
         f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
-    # format 'response' into a python list using regex
-    response_list = re.findall(r"\d\.\s(.*)", response)
-    # strip empty strings from list
-    response_list = [x for x in response_list if x]
+    response_list = re.findall(r"\d\.\s(.*)", response) # regex to extract list items from response text
+    response_list = [x for x in response_list if x] # remove empty strings
     return response_list
 
 
-def generate_reply(message, context, style="Email reply, business, casual"):
+def generate_reply(message, context, style):
     """
     Generates a reply using the OpenAI API
     :param message:
@@ -219,14 +220,13 @@ def generate_reply(message, context, style="Email reply, business, casual"):
     Example usage:
     message = "I'm interested in buying a new car"
     context = "A customer email to a car dealership"
-    reply = generate_reply(message, context)
+    style = "Email reply, business, casual"
+    reply = generate_reply(message, context, style)
     print(reply)
-
-
     """
     prompt = f"reply to the following message (respond only to the text within the brackets): \n[ {message} ] \n " \
-             f"context: \n {context} \n " \
-             f"style: \n {style} \n"
+             f"the message was sent in the following context: \n {context} \n " \
+             f"the reply should be written in the following style: \n {style} \n"
     response = generate_text(prompt)
     return response
 
@@ -234,17 +234,16 @@ def generate_reply(message, context, style="Email reply, business, casual"):
 """
 Modifier functions
 
+These functions take the output of the above functions and modify them in various ways.
 
 refine_text() - refines text using the OpenAI API
 summarize_text() - summarizes text using the OpenAI API
 elaborate_text() - elaborates text using the OpenAI API
 restyle_text() - restyles text using the OpenAI API
-
-
 """
 
 
-def refine_text(text, refine_by="rewrite the text to be more interesting, engaging, and grammatically "
+def refine_text(text, refine_by="more interesting, engaging, and grammatically "
                                 "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
                                 "or incorrect word usages"):
     """
@@ -254,7 +253,7 @@ def refine_text(text, refine_by="rewrite the text to be more interesting, engagi
     :return:
     Example usage:
     text = "I am a robot"
-    refined_text = refine_text(text, "rewrite the text to be more interesting, engaging, and grammatically correct. ")
+    refined_text = refine_text(text, "more grammatically correct.")
     print(refined_text)
     """
     prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
@@ -325,6 +324,7 @@ def restyle_text(text, style):
 """
 Analysis functions
 
+These functions analyze text in various ways.
 
 analyze_text() - analyzes text using the OpenAI API
 is_prompt_injection() - checks if a prompt is an injection attack using the OpenAI API
@@ -332,25 +332,25 @@ sentiment_analysis() - analyzes sentiment using the OpenAI API
 """
 
 
-def analyse_text(text, analyse_for):
+def analyze_text(text, analyze_for):
     """
     Analyzes text using the OpenAI API
     :param text:
-    :param analyse_for:
+    :param analyze_for:
     :return:
     Example usage:
     text = "Men are smarter than women"
-    analyse_for = "biased"
-    analysis, evaluation = analyse_text(text, analyse_for)
+    analyze_for = "biased"
+    analysis, evaluation = analyze_text(text, analyze_for)
     print(f"Analysis: {analysis}\nEvaluation: {evaluation}")
     """
-    prompt = f"Is the following text {analyse_for}?: \n {text} \n"
+    prompt = f"Is the following text {analyze_for}?: \n {text} \n"
     response = generate_text(prompt)
     if "yes" in response or "Yes" in response:
-        evaluation = generate_text(f"what is {analyse_for} in the following text? \n {text} \n")
+        evaluation = generate_text(f"what is {analyze_for} in the following text? \n {text} \n")
         return True, evaluation
     elif "no" in response or "No" in response:
-        evaluation = generate_text(f"what is not {analyse_for} in the following text? \n {text} \n")
+        evaluation = generate_text(f"what is not {analyze_for} in the following text? \n {text} \n")
         return False, evaluation
     else:
         return "Error", None
