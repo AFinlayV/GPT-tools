@@ -16,20 +16,44 @@ load_text(filename) - loads text from a text file
 """
 
 
-def api_login():
+def api_login(api_key_path=API_KEY_PATH):
+    """
+    Logs into the OpenAI API
+    using the path to a text file containing the API key
+    Example usage:
+    api_login("/Users/username/Documents/API Keys/OpenAI_API_key.txt")
+    """
     # load a text file containing the api key
-    with open(API_KEY_PATH, "r") as f:
+    with open(api_key_path, "r") as f:
         api_key = f.read()
     openai.api_key = api_key
     dalle2.api_key = api_key
 
 
 def save_text(text, filename):
+    """
+    Saves text to a text file
+    :param text:
+    :param filename:
+    :return:
+    Example usage:
+    text = "I like cute dogs"
+    filename = "dog.txt"
+    save_text(text, filename)
+    """
     with open(filename, "w") as f:
         f.write(text)
 
 
 def load_text(filename):
+    """
+    Loads text from a text file
+    :param filename:
+    :return:
+    Example usage:
+    filename = "dog.txt"
+    text = load_text(filename)
+    """
     with open(filename, "r") as f:
         text = f.read()
     return text
