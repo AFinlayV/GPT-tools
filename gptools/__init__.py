@@ -1,30 +1,38 @@
 import openai
 import dalle2
 import requests
-import time
+import re
+
+API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
 
 def api_login():
     # load a text file containing the api key
-    with open("/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt", "r") as f:
+    with open(API_KEY_PATH, "r") as f:
         api_key = f.read()
     openai.api_key = api_key
     dalle2.api_key = api_key
 
 
-def generate_text(prompt, model="text-davinci-003", temperature=0.7, n=1):
-    completions = openai.Completion.create(engine=model, prompt=prompt, max_tokens=1024, temperature=temperature, n=n)
-    responses = [choice.text for choice in completions.choices]
-    return responses[0]
+def generate_text(prompt, model="text-davinci-003", temperature=0.7):
+    try:
+        response = openai.Completion.create(engine=model,
+                                            prompt=prompt,
+                                            max_tokens=2048,
+                                            temperature=temperature,
+                                            n=1)
+        return response["choices"][0]["text"]
+    except Exception as e:
+        print(f"Error generating text:\n Prompt:\n {prompt}\n Model: {model}\nError:\n{e}\n")
+        if input("Try again? (y/n)") == "y" or "Y":
+            generate_text(prompt, model, temperature)
+        else:
+            return "Error generating text"
 
 
-def generate_text_from_image(image, model="text-davinci-003", temperature=0.5, n=1):
-    completions = dalle2.generate_text(image, model=model, temperature=temperature, n=n)
-    responses = [choice.text for choice in completions.choices]
-    return responses[0]
-
-
-def refine_text(text, refine_by="make general improvements"):
+def refine_text(text, refine_by="rewrite the text to be more interesting, engaging, and grammatically "
+                                "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
+                                "or incorrect word usages"):
     prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
     critique_text = generate_text(prompt)
     prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n\n"
@@ -38,10 +46,33 @@ def generate_story(plot, themes, characters, setting):
     return story
 
 
-def prompt_assembler_text(preprompt, prompt, style):
-    full_prompt = f"{preprompt} /n {prompt} /n {style}"
-    response = generate_text(full_prompt)
+def summarize_text(text):
+    prompt = f"Summarize the following text: \n {text} \n"
+    summary = generate_text(prompt)
+    return summary
+
+
+def elaborate_text(prompt):
+    prompt = f"being as detailed and verbose as possible, elaborate on the following text: \n {prompt} \n "
+    response = generate_text(prompt)
     return response
+
+
+def restyle_text(text, style):
+    prompt = f"rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
+             f"in the following style: \n {style} \n"
+    restyled_text = generate_text(prompt)
+    return restyled_text
+
+
+def generate_list(prompt, n=5):
+    response_list = []
+    response = generate_text(
+        f"generate a numbered list of {n} items for the following prompt: \n {prompt} this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n")
+    # format 'response' into a python list using regex
+    response_list = re.findall(r"\d\.\s(.*)", response)
+    return response_list
+
 
 def is_offensive(text):
     prompt = f"Is the following text offensive? \n {text} \n"
@@ -105,6 +136,8 @@ def generate_image_from_text(prompt, style, filename):
         open(filename, 'wb').write(r.content)
         print(f"Image saved: {filename}")
     except Exception as e:
-        print(f"{e}\nImage generation failed:\n {prompt} \n {style}\n trying again in 10 seconds...")
-        time.sleep(10)
-        generate_image_from_text(prompt, style, filename)
+        print(f"Image generation failed:\n Prompt: \n{prompt} \n Style: \n{style}\n Error Message: \n{e}\n")
+        if input("Try again? (y/n)") == "y" or "Y":
+            generate_image_from_text(prompt, style, filename)
+        else:
+            return "Image generation failed"
