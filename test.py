@@ -11,3 +11,8 @@ a sandbox for brainstorming interactions between the functions in gptools.functi
 
 
 def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()

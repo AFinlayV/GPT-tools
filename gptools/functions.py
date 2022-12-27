@@ -292,6 +292,7 @@ refine_text() - refines text using the OpenAI API
 summarize_text() - summarizes text using the OpenAI API
 elaborate_text() - elaborates text using the OpenAI API
 restyle_text() - restyles text using the OpenAI API
+sort_list() - sorts a list using the OpenAI API
 """
 
 
@@ -376,7 +377,21 @@ def restyle_text(text, style):
     restyled_text = generate_text(prompt)
     return restyled_text
 
+def sort_list(list: list, sort_by: str) -> list:
+    """
+    Sorts a list using the OpenAI API
+    :param list: list to sort
+    :param sort_by: how to sort the list
+    :return: sorted list as a list
 
+    Example usage:
+    list = ["apple", "banana", "orange"]
+    sorted_list = sort_list(list, "alphabetical order")
+    print(sorted_list)
+    """
+    prompt = f"Sort the following list in the following by {sort_by}: \n {list} \n "
+    sorted_list = generate_list(prompt, len(list))
+    return sorted_list
 """
 Analysis functions
 
