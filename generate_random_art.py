@@ -1,31 +1,41 @@
-import gptools as ai
+import gptools.functions as ai
 import random
 import re
 
 ai.api_login()
-num_images = 4
-num_styles = 4
-prompts = ai.generate_text(f"Make a list of {num_images} detailed vivid visual descriptions of the subject and background of a beautiful image, painting or photograph.")
-styles = ai.generate_text(f"Make a list of {num_styles} detailed vivid visual descriptions of the colors, textures, lighting, and mood of different styles of visual art.")
-#format the prompts and styles as lists
-prompts = prompts.split("\n")
-styles = styles.split("\n")
-# use regex to remove all numbers, periods and "\n" from the prompts and styles
-prompts = [re.sub(r"\d+\.|\n", "", x) for x in prompts]
-styles = [re.sub(r"\d+\.|\n", "", x) for x in styles]
+NUM_PROMPTS = 20
+NUM_STYLES = 10
+NUM_IMAGES = 5
+PATH = "/Users/alexthe5th/Pictures/AI Art/"
+PROMPT = "a cityscape"
+STYLE = "abstract art"
 
-# remove empty list items
-styles = [style for style in styles if style != ""]
-prompts = [prompt for prompt in prompts if prompt != ""]
-print(f"prompts:{prompts}")
-print(len(prompts))
-print(f"styles:{styles}")
-print(len(styles))
-for prompt in prompts:
-    style = random.choice(styles)
+
+def generate_random_prompts(num_prompts: int, num_styles: int):
+    prompts = ai.generate_list(
+        f"detailed vivid visual descriptions of the subject and background for different images of {PROMPT}.",
+        num_prompts)
+    styles = ai.generate_list(
+        f"detailed vivid visual descriptions of the colors, textures, lighting, and mood of different styles of {STYLE}.",
+        num_styles)
+    return prompts, styles
+
+
+def generate_art(prompt, style):
     print(prompt, style)
     filename = f"{prompt} {style}"
     if len(filename) > 200:
         filename = filename[:200]
-    ai.generate_image_from_text(prompt,style, f"/Users/alexthe5th/Pictures/AI Art/{filename}.png")
+    ai.generate_image_from_text(prompt, style, f"{PATH}{filename}.png")
 
+
+def main():
+    prompts, styles = generate_random_prompts(NUM_PROMPTS, NUM_STYLES)
+    for image in range(NUM_IMAGES):
+        prompt = random.choice(prompts)
+        style = random.choice(styles)
+        generate_art(prompt, style)
+
+
+if __name__ == "__main__":
+    main()
