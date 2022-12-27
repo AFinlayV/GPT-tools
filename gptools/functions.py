@@ -4,10 +4,20 @@ import requests
 import re
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
+"""
+A set of functions for generating text and images using the OpenAI API
+
+1. General utility functions
+2. Text and image generation functions
+3. Text modification functions
+4. Text analysis functions
+
 
 
 """
-Utility functions
+
+"""
+1.Utility functions
 
 A set of basic functions that are useful for working with GPT-3 and DALL-E.
 
@@ -35,7 +45,7 @@ def api_login(api_key_path=API_KEY_PATH):
     dalle2.api_key = api_key
 
 
-def save_text(text, filename):
+def save_text(text: str, filename: str):
     """
     Saves text to a text file
     :param text: text to save
@@ -51,7 +61,7 @@ def save_text(text, filename):
         f.write(text)
 
 
-def append_text(text, filename):
+def append_text(text: str, filename: str):
     """
     Appends text to a text file
     :param text: text to append
@@ -69,7 +79,7 @@ def append_text(text, filename):
         f.write(text)
 
 
-def load_text(filename):
+def load_text(filename: str) -> str:
     """
     Loads text from a text file
     :param filename: name of the file to load the text from
@@ -85,7 +95,7 @@ def load_text(filename):
 
 
 """
-Generative functions
+2. Generative functions
 
 A set of functions that use the OpenAI API to generate text, images, and stories.
 
@@ -101,7 +111,7 @@ generate_reply() - generates a reply using the OpenAI API
 """
 
 
-def generate_text(prompt, model="text-davinci-003", temperature=0.7):
+def generate_text(prompt: str, model="text-davinci-003", temperature=0.7) -> str:
     """
     Generates text using the OpenAI API
     :param prompt: text to use as a prompt
@@ -128,7 +138,7 @@ def generate_text(prompt, model="text-davinci-003", temperature=0.7):
             return "Error generating text"
 
 
-def generate_image_from_text(prompt, style, filename):
+def generate_image_from_text(prompt: str, style: str, filename: str):
     """
     Generates an image from text using the OpenAI API
     :param prompt: text to use as a prompt
@@ -154,6 +164,7 @@ def generate_image_from_text(prompt, style, filename):
         url = response["data"][0]["url"]
         r = requests.get(url, allow_redirects=True)
         open(filename, 'wb').write(r.content)
+        image = r
         print(f"Image saved: {filename}")
     except Exception as e:
         print(f"Image generation failed:\n Prompt: \n{prompt} \n Style: \n{style}\n Error Message: \n{e}\n")
@@ -163,7 +174,7 @@ def generate_image_from_text(prompt, style, filename):
             return "Image generation failed"
 
 
-def generate_image_prompt(text, style):
+def generate_image_prompt(text: str, style: str) -> str:
     """
     Generates a prompt for generating an image from text using the OpenAI API
     :param text: text to use as a prompt
@@ -185,7 +196,7 @@ def generate_image_prompt(text, style):
     return full_prompt
 
 
-def generate_story(plot, themes, characters, setting):
+def generate_story(plot: str, themes: str, characters: str, setting: str) -> str:
     """
     Generates a story using the OpenAI API
     :param plot: plot to use
@@ -207,7 +218,7 @@ def generate_story(plot, themes, characters, setting):
     return story
 
 
-def generate_screenplay(text):
+def generate_screenplay(text: str) -> str:
     """
     Generates a screenplay using the OpenAI API
     :param text: text to use as a prompt
@@ -223,7 +234,7 @@ def generate_screenplay(text):
     return screenplay
 
 
-def generate_title(text, title_type):
+def generate_title(text: str, title_type: str) -> str:
     """
     Generates a title using the OpenAI API
     :param text: text to use as a prompt
@@ -241,7 +252,7 @@ def generate_title(text, title_type):
     return title
 
 
-def generate_list(prompt, n=5):
+def generate_list(prompt: str, n:int=5) -> list:
     """
     Generates a list using the OpenAI API
     :param prompt: text to use as a prompt
@@ -261,7 +272,7 @@ def generate_list(prompt, n=5):
     return response_list
 
 
-def generate_reply(message, context, style):
+def generate_reply(message: str, context: str, style: str) -> str:
     """
     Generates a reply using the OpenAI API
     :param message: message to reply to
@@ -284,7 +295,7 @@ def generate_reply(message, context, style):
 
 
 """
-Modifier functions
+3. Modifier functions
 
 These functions take the output of the above functions and modify them in various ways.
 
@@ -296,9 +307,9 @@ sort_list() - sorts a list using the OpenAI API
 """
 
 
-def refine_text(text, refine_by="more interesting, engaging, and grammatically "
+def refine_text(text: str, refine_by: str="more interesting, engaging, and grammatically "
                                 "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
-                                "or incorrect word usages"):
+                                "or incorrect word usages") -> str:
     """
     Refines text using the OpenAI API
     :param text: text to refine
@@ -317,7 +328,7 @@ def refine_text(text, refine_by="more interesting, engaging, and grammatically "
     return refined_text, critique_text
 
 
-def summarize_text(text):
+def summarize_text(text: str, summary_length_words: int=100):
     """
     Summarizes text using the OpenAI API
     :param text: text to summarize
@@ -336,13 +347,12 @@ def summarize_text(text):
     summary = summarize_text(text)
     print(summary)
     """
-    prompt = f"Summarize the following text my making a point by point outline and " \
-             f"summarizing the main ideas in each part of the outline: \n {text} \n"
+    prompt = f"Summarize the following text with at most {summary_length_words} words: \n {text} \n"
     summary = generate_text(prompt)
     return summary
 
 
-def elaborate_text(text):
+def elaborate_text(text: str):
     """
     Elaborates text using the OpenAI API
     :param text: text to elaborate
@@ -359,7 +369,7 @@ def elaborate_text(text):
     return response
 
 
-def restyle_text(text, style):
+def restyle_text(text: str, style: str):
     """
     Restyles text using the OpenAI API
     :param text: text to restyle
@@ -377,10 +387,10 @@ def restyle_text(text, style):
     restyled_text = generate_text(prompt)
     return restyled_text
 
-def sort_list(list: list, sort_by: str) -> list:
+def sort_list(unsorted_list: list, sort_by: str) -> list:
     """
     Sorts a list using the OpenAI API
-    :param list: list to sort
+    :param unsorted_list: list to sort
     :param sort_by: how to sort the list
     :return: sorted list as a list
 
@@ -389,11 +399,11 @@ def sort_list(list: list, sort_by: str) -> list:
     sorted_list = sort_list(list, "alphabetical order")
     print(sorted_list)
     """
-    prompt = f"Sort the following list in the following by {sort_by}: \n {list} \n "
-    sorted_list = generate_list(prompt, len(list))
+    prompt = f"Sort the following list in the following by {sort_by}: \n {unsorted_list} \n "
+    sorted_list = generate_list(prompt, len(unsorted_list))
     return sorted_list
 """
-Analysis functions
+4. Analysis functions
 
 These functions analyze text in various ways.
 
@@ -403,7 +413,7 @@ sentiment_analysis() - analyzes sentiment using the OpenAI API
 """
 
 
-def analyze_text(text, analyze_for):
+def analyze_text(text: str, analyze_for: str):
     """
     Analyzes text using the OpenAI API
     :param text: the text to analyze
@@ -430,7 +440,7 @@ def analyze_text(text, analyze_for):
         return "Error", None
 
 
-def is_prompt_injection(text):
+def is_prompt_injection(text: str):
     """
     Detects weather there may be a prompt injection attack in the given text
     :param text: text to evaluate for prompt injection
@@ -454,7 +464,7 @@ def is_prompt_injection(text):
         return "Error", None
 
 
-def sentiment_analysis(text):
+def sentiment_analysis(text: str):
     """
     Analyzes sentiment using the OpenAI API
     :param text: text to analyze sentiment

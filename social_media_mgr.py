@@ -1,7 +1,11 @@
-import gptools as ai
+import gptools.functions as ai
 import time
 
-ai.api_login()
+API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
+ai.api_login(API_KEY_PATH)
+
+
+
 
 
 class ContentGenerator:
