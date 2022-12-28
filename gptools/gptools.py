@@ -38,7 +38,6 @@ def api_login(api_key_path=API_KEY_PATH):
     API_KEY_PATH = "/Users/User/API Keys/OpenAI_API_key.txt"
     api_login(API_KEY_PATH)
     """
-    # load a text file containing the api key
     with open(api_key_path, "r") as f:
         api_key = f.read()
     openai.api_key = api_key
@@ -619,6 +618,15 @@ class Text:
         pi_result, pi_evaluation = is_prompt_injection(self.text)
         self.check_results["prompt injection"] = {"result": pi_result, "evaluation": pi_evaluation}
         return self.results
+
+    def restyle(self, style):
+        """
+        Restyle text using the OpenAI API.
+        :param style: style to restyle to
+        :return: restyled text
+        """
+        self.text = restyle_text(self.text, style)
+        return self.text
 
     def sentiment(self):
         """
