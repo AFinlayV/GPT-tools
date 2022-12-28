@@ -3,7 +3,6 @@ import dalle2
 import requests
 import re
 
-
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 """
 A set of functions for generating text and images using the OpenAI API
@@ -165,7 +164,6 @@ def generate_image_from_text(prompt: str, style: str, filename: str):
         url = response["data"][0]["url"]
         r = requests.get(url, allow_redirects=True)
         open(filename, 'wb').write(r.content)
-        image = r
         print(f"Image saved: {filename}")
     except Exception as e:
         print(f"Image generation failed:\n Prompt: \n{prompt} \n Style: \n{style}\n Error Message: \n{e}\n")
@@ -215,7 +213,8 @@ def generate_story(plot: str, themes: str, characters: str, setting: str) -> str
     print(story)
     """
     story = generate_text(
-        f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n setting: {setting}")
+        f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n "
+        f"setting: {setting}")
     return story
 
 
@@ -226,7 +225,7 @@ def generate_screenplay(text: str) -> str:
     :return: generated screenplay as a string
 
     Example usage:
-    text = "A dilaogue between two characters discussing the history of Artificial Intelligence"
+    text = "A dialogue between two characters discussing the history of Artificial Intelligence"
     screenplay = generate_screenplay(text)
     print(screenplay)
     """
@@ -243,7 +242,7 @@ def generate_title(text: str, title_type: str) -> str:
     :return: generated title as a string
 
     Example usage:
-    text = "A dilaogue between two characters discussing the history of Artificial Intelligence"
+    text = "A dialogue between two characters discussing the history of Artificial Intelligence"
     title_type = "movie"
     title = generate_title(text)
     print(title)
@@ -311,7 +310,7 @@ sort_list() - sorts a list using the OpenAI API
 def refine_text(text: str, critique: str) -> str:
     """
     Refines text using the OpenAI API
-    :param critique_list: A python list of critiques of the text
+    :param critique: critique to use in refining the text
     :param text: text to refine
     :return: refined text as a string, critiques used to refine the text as a string
 
@@ -425,7 +424,8 @@ def critique_text(text: str, num: int, critique_by: str) -> list:
 
     :return: a list of critiques
     """
-    prompt = f"[{text}] \n make a list of {num} ways to improve the text in brackets above, in the following way: {critique_by}\n"
+    prompt = f"[{text}] \n make a list of {num} ways to improve the text in brackets above, " \
+             f"in the following way: {critique_by}\n"
     critique_list = generate_list(prompt, num)
     return critique_list
 
@@ -512,6 +512,8 @@ class Prompt:
         self.prompt = prompt
         self.response = str
         self.check_results = dict()
+        self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
+                           "illegal", "biased"]
 
     def generate_text(self):
         """
@@ -533,23 +535,20 @@ class Prompt:
         """
         generate_image_from_text(self.prompt, style, path)
 
-    def check(self, check_list: list = None):
+    def check(self):
         """
 
         check to see if the prompt is offensive, or objectionable in any way using analyse_text.
 
-        :param check_list: list of things to check for
-        :return: a list of the results of the analysis
+        :return: a dict() of the results of the analysis for each of the check_list items.
 
         """
-        if check_list is None:
-            check_list = ["offensive", "biased", "inappropriate", "insecure", "malicious"]
-        for check in check_list:
+        for check in self.check_list:
             result, evaluation = analyze_text(self.prompt, check)
-            self.check_results.append(check, {"result": result, "evaluation": evaluation})
+            self.check_results[check] = {"result": result, "evaluation": evaluation}
         pi_result, pi_evaluation = is_prompt_injection(self.prompt)
-        self.check_results.append("prompt_injection", {"result": pi_result, "evaluation": pi_evaluation})
-        return self.results
+        self.check_results["prompt_injection"] = {"result": pi_result, "evaluation": pi_evaluation}
+        return self.check_results
 
 
 class Text:
@@ -564,9 +563,28 @@ class Text:
         self.refined_response = str
         self.check_results = {}
         self.sentiment = str
-        self.check_list = ["offensive", "biased", "inappropriate", "violent", "malicious"]
+        self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
+                           "illegal", "biased"]
 
-    def critique(self, num: int, critique_by: str):
+    def summarize(self, num: int):
+        """
+        Summarizes the text.
+
+        param num: number of words to summarize to
+        :return: the summarized text
+
+        """
+        self.text = summarize_text(self.text, num)
+        return self.text
+
+    def elaborate(self):
+        """
+        Elaborates on the text.
+        """
+        self.text = elaborate_text(self.text)
+        return self.text
+
+    def critique(self, num: int, critique_by: str) -> list:
         """
         Generates a critique using the OpenAI API
         :param num: number of critiques to generate
@@ -580,7 +598,6 @@ class Text:
     def refine(self) -> str:
         """
         Refine text from the prompt using and refine_text.
-        :param text: text to refine
         :
         :return: refined text
         """
@@ -593,9 +610,7 @@ class Text:
 
             check to see if the text is offensive, or objectionable in any way using analyse_text.
 
-            :param check_list: list of things to check for
-            :return: a list of the results of the analysis
-
+            :return: a dict() of the results of the analysis for each of the check_list items.
             """
 
         for check in self.check_list:
