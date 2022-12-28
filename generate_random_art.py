@@ -1,4 +1,4 @@
-import gptools.functions as ai
+import gptools.gptools as ai
 import random
 import re
 

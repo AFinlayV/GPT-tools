@@ -1,4 +1,4 @@
-import gptools.functions as ai
+import gptools.gptools as ai
 
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"

@@ -1,2 +1,2 @@
-import gptools.functions as ai
+import gptools.gptools as ai
 

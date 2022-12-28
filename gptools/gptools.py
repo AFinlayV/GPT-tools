@@ -3,6 +3,7 @@ import dalle2
 import requests
 import re
 
+
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 """
 A set of functions for generating text and images using the OpenAI API
@@ -252,7 +253,7 @@ def generate_title(text: str, title_type: str) -> str:
     return title
 
 
-def generate_list(prompt: str, n:int=5) -> list:
+def generate_list(prompt: str, n: int = 5) -> list:
     """
     Generates a list using the OpenAI API
     :param prompt: text to use as a prompt
@@ -307,13 +308,11 @@ sort_list() - sorts a list using the OpenAI API
 """
 
 
-def refine_text(text: str, refine_by: str="more interesting, engaging, and grammatically "
-                                "correct. Fix any typos and logical errors. Make sure there are no spelling mistakes, "
-                                "or incorrect word usages") -> str:
+def refine_text(text: str, critique: str) -> str:
     """
     Refines text using the OpenAI API
+    :param critique_list: A python list of critiques of the text
     :param text: text to refine
-    :param refine_by: how to refine the text
     :return: refined text as a string, critiques used to refine the text as a string
 
     Example usage:
@@ -321,16 +320,16 @@ def refine_text(text: str, refine_by: str="more interesting, engaging, and gramm
     refined_text = refine_text(text, "more grammatically correct.")
     print(refined_text)
     """
-    prompt = f"[{text}] \n make a list of 5 ways to improve the text in brackets above, in the following way: {refine_by}\n"
-    critique_text = generate_text(prompt)
-    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing all of the following issues: \n{critique_text}\n"
-    refined_text = generate_text(prompt)
-    return refined_text, critique_text
+
+    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing the following issue: \n{critique}\n"
+    text = generate_text(prompt)
+    return text
 
 
-def summarize_text(text: str, summary_length_words: int=100):
+def summarize_text(text: str, summary_length_words: int = 100):
     """
     Summarizes text using the OpenAI API
+    :param summary_length_words: length of summary in words
     :param text: text to summarize
     :return: summarized text as a string
 
@@ -387,6 +386,7 @@ def restyle_text(text: str, style: str):
     restyled_text = generate_text(prompt)
     return restyled_text
 
+
 def sort_list(unsorted_list: list, sort_by: str) -> list:
     """
     Sorts a list using the OpenAI API
@@ -402,15 +402,32 @@ def sort_list(unsorted_list: list, sort_by: str) -> list:
     prompt = f"Sort the following list in the following by {sort_by}: \n {unsorted_list} \n "
     sorted_list = generate_list(prompt, len(unsorted_list))
     return sorted_list
+
+
 """
 4. Analysis functions
 
 These functions analyze text in various ways.
 
+critique_text() - critiques text using the OpenAI API
 analyze_text() - analyzes text using the OpenAI API
 is_prompt_injection() - checks if a prompt is an injection attack using the OpenAI API
 sentiment_analysis() - analyzes sentiment using the OpenAI API
 """
+
+
+def critique_text(text: str, num: int, critique_by: str) -> list:
+    """
+    Generates a critique using the OpenAI API
+    :param text: text to be critiqued
+    :param num: number of critiques to generate
+    :param critique_by: criteria to critique by
+
+    :return: a list of critiques
+    """
+    prompt = f"[{text}] \n make a list of {num} ways to improve the text in brackets above, in the following way: {critique_by}\n"
+    critique_list = generate_list(prompt, num)
+    return critique_list
 
 
 def analyze_text(text: str, analyze_for: str):
@@ -478,3 +495,120 @@ def sentiment_analysis(text: str):
     prompt = f"what is the sentiment of the following text? \n {text} \n"
     response = generate_text(prompt)
     return response
+
+
+"""
+Classes for the OpenAI API
+
+"""
+
+
+class Prompt:
+    """
+    A prompt for the OpenAI API.
+    """
+
+    def __init__(self, prompt):
+        self.prompt = prompt
+        self.response = str
+        self.check_results = dict()
+
+    def generate_text(self):
+        """
+        Generate text from the prompt.
+        """
+        self.response = generate_text(self.prompt)
+        return self.response
+
+    def generate_list(self, num: int) -> list:
+        """
+        Generate a list from the prompt.
+        """
+        self.response = generate_list(self.prompt, num)
+        return self.response
+
+    def generate_image(self, style, path):
+        """
+        Generate an image from the prompt.
+        """
+        generate_image_from_text(self.prompt, style, path)
+
+    def check(self, check_list: list = None):
+        """
+
+        check to see if the prompt is offensive, or objectionable in any way using analyse_text.
+
+        :param check_list: list of things to check for
+        :return: a list of the results of the analysis
+
+        """
+        if check_list is None:
+            check_list = ["offensive", "biased", "inappropriate", "insecure", "malicious"]
+        for check in check_list:
+            result, evaluation = analyze_text(self.prompt, check)
+            self.check_results.append(check, {"result": result, "evaluation": evaluation})
+        pi_result, pi_evaluation = is_prompt_injection(self.prompt)
+        self.check_results.append("prompt_injection", {"result": pi_result, "evaluation": pi_evaluation})
+        return self.results
+
+
+class Text:
+    """
+    text for editing, revision and analysis.
+    """
+
+    def __init__(self, text: str):
+        self.results = {}
+        self.text = text
+        self.critiques = []
+        self.refined_response = str
+        self.check_results = {}
+        self.sentiment = str
+        self.check_list = ["offensive", "biased", "inappropriate", "violent", "malicious"]
+
+    def critique(self, num: int, critique_by: str):
+        """
+        Generates a critique using the OpenAI API
+        :param num: number of critiques to generate
+        :param critique_by: criteria to critique by
+
+        :return: a list of critiques
+        """
+        self.critiques = critique_text(self.text, num, critique_by)
+        return self.critiques
+
+    def refine(self) -> str:
+        """
+        Refine text from the prompt using and refine_text.
+        :param text: text to refine
+        :
+        :return: refined text
+        """
+        for critique in self.critiques:
+            self.refined_response = refine_text(self.text, critique)
+        return self.refined_response
+
+    def check(self):
+        """
+
+            check to see if the text is offensive, or objectionable in any way using analyse_text.
+
+            :param check_list: list of things to check for
+            :return: a list of the results of the analysis
+
+            """
+
+        for check in self.check_list:
+            result, evaluation = analyze_text(self.text, check)
+            self.check_results[check] = {"result": result, "evaluation": evaluation}
+        pi_result, pi_evaluation = is_prompt_injection(self.text)
+        self.check_results["prompt injection"] = {"result": pi_result, "evaluation": pi_evaluation}
+        return self.results
+
+    def sentiment(self):
+        """
+        Analyzes sentiment using the OpenAI API
+        :return: sentiment analysis as a string
+        """
+        self.sentiment = sentiment_analysis(self.text)
+        return self.sentiment
