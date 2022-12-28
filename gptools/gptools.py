@@ -576,7 +576,7 @@ class Text:
         self.text = summarize_text(self.text, num)
         return self.text
 
-    def elaborate(self):
+    def elaborate(self) -> str:
         """
         Elaborates on the text.
         """
@@ -604,7 +604,7 @@ class Text:
             self.refined_response = refine_text(self.text, critique)
         return self.refined_response
 
-    def check(self):
+    def check(self) -> dict:
         """
 
             check to see if the text is offensive, or objectionable in any way using analyse_text.
@@ -619,16 +619,17 @@ class Text:
         self.check_results["prompt injection"] = {"result": pi_result, "evaluation": pi_evaluation}
         return self.results
 
-    def restyle(self, style):
+    def restyle(self, style) -> str:
         """
-        Restyle text using the OpenAI API.
+        Restyle text using the OpenAI API
+
         :param style: style to restyle to
         :return: restyled text
         """
         self.text = restyle_text(self.text, style)
         return self.text
 
-    def sentiment(self):
+    def sentiment(self) -> str:
         """
         Analyzes sentiment using the OpenAI API
         :return: sentiment analysis as a string
