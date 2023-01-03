@@ -121,6 +121,7 @@ generate_reply() - generates a reply using the OpenAI API
 generate_questions() - generates questions using the OpenAI API
 generate_outline() - generates an outline using the OpenAI API
 generate_critiques() - generates critiques using the OpenAI API
+generate_summary() - generates a summary using the OpenAI API
 """
 
 
@@ -332,6 +333,31 @@ def generate_outline(text: str, num: int) -> list:
     return outline_list
 
 
+def generate_summary(text: str, summary_length_words: int = 100):
+    """
+    Summarizes text using the OpenAI API
+    :param summary_length_words: length of summary in words
+    :param text: text to summarize
+    :return: summarized text as a string
+
+    Example usage:
+    text = "The field of artificial
+    intelligence (AI) has a long and complex history, with roots stretching back to ancient civilizations and the
+    development of early calculating machines. In the modern era, the term "artificial intelligence" was coined in
+    1956 at a conference at Dartmouth College, where a group of researchers gathered to discuss the possibility of
+    creating machines that could think and act like humans. Since then, AI has come a long way, with significant
+    advances in fields such as machine learning, natural language processing, and robotics. Today, AI is being used
+    in a wide range of applications, from healthcare and finance to manufacturing and transportation. Despite these
+    advances, AI continues to be a topic of intense debate and discussion, as researchers and policymakers grapple
+    with the potential ethical, social, and economic implications of this rapidly evolving technology.
+    summary = summarize_text(text)
+    print(summary)
+    """
+    prompt = f"Summarize the following text with at most {summary_length_words} words: \n {text} \n"
+    summary = generate_text(prompt)
+    return summary
+
+
 """
 3. Modifier functions
 
@@ -362,31 +388,6 @@ def refine_text(text: str, critique: str) -> str:
              f"following: \n{critique}\n "
     text = generate_text(prompt)
     return text
-
-
-def summarize_text(text: str, summary_length_words: int = 100):
-    """
-    Summarizes text using the OpenAI API
-    :param summary_length_words: length of summary in words
-    :param text: text to summarize
-    :return: summarized text as a string
-
-    Example usage:
-    text = "The field of artificial
-    intelligence (AI) has a long and complex history, with roots stretching back to ancient civilizations and the
-    development of early calculating machines. In the modern era, the term "artificial intelligence" was coined in
-    1956 at a conference at Dartmouth College, where a group of researchers gathered to discuss the possibility of
-    creating machines that could think and act like humans. Since then, AI has come a long way, with significant
-    advances in fields such as machine learning, natural language processing, and robotics. Today, AI is being used
-    in a wide range of applications, from healthcare and finance to manufacturing and transportation. Despite these
-    advances, AI continues to be a topic of intense debate and discussion, as researchers and policymakers grapple
-    with the potential ethical, social, and economic implications of this rapidly evolving technology.
-    summary = summarize_text(text)
-    print(summary)
-    """
-    prompt = f"Summarize the following text with at most {summary_length_words} words: \n {text} \n"
-    summary = generate_text(prompt)
-    return summary
 
 
 def elaborate_text(text: str):
@@ -631,7 +632,7 @@ class GPTtext:
 
         """
 
-        self.summary = summarize_text(self.original_text, num)
+        self.summary = generate_summary(self.original_text, num)
 
         return self.summary
 
