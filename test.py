@@ -13,17 +13,17 @@ def main():
     """
     test the methods in ai.GPTtext object
     """
-    topic_list = ai.generate_list("good subjects for song lyrics", 5)
+    topic_list = ai.generate_list("good subjects for song lyrics", 1)
     for topic in topic_list:
         print(topic)
-        gpt_prompt = ai.GPTprompt(f"write song pitch about {topic}")
+        gpt_prompt = ai.GPTprompt(f"write song about {topic}")
         gpt_text = ai.GPTtext(gpt_prompt.generate_text())
         print(gpt_text.original_text)
         gpt_text.title_type = "song"
         gpt_text.get_meta()
         for key in gpt_text.meta:
             print(key, gpt_text.meta[key])
-        print("~~~~~~NEW TOPIC~~~~~~~~")
+        print(f"\n~~~~~~NEW {gpt_text.title_type}~~~~~~~~\n")
         gpt_text.save(f"text/{gpt_text.title}.txt")
 
 
