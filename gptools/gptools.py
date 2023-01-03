@@ -91,9 +91,6 @@ def append_text(text: str, filename: str):
         f.write(text)
 
 
-
-
-
 def load_text(filename: str) -> str:
     """
     Loads text from a text file
@@ -148,7 +145,7 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7) -> str
     except Exception as e:
         print(f"Error generating text:\n Prompt:\n {prompt}\n Model: {model}\nError:\n{e}\n")
         if input("Try again? (y/n)") == "y" or "Y":
-            generate_text(prompt, model, temperature)
+            generate_text(prompt)
         else:
             return "Error generating text"
 
@@ -231,22 +228,6 @@ def generate_story(plot: str, themes: str, characters: str, setting: str) -> str
         f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n "
         f"setting: {setting}")
     return story
-
-
-def generate_screenplay(text: str) -> str:
-    """
-    Generates a screenplay using the OpenAI API
-    :param text: text to use as a prompt
-    :return: generated screenplay as a string
-
-    Example usage:
-    text = "A dialogue between two characters discussing the history of Artificial Intelligence"
-    screenplay = generate_screenplay(text)
-    print(screenplay)
-    """
-    prompt = f"Write a screenplay that tells the story in the text between the brackets below: \n[ {text} ]\n"
-    screenplay = generate_text(prompt)
-    return screenplay
 
 
 def generate_title(text: str, title_type: str) -> str:
@@ -445,6 +426,30 @@ def critique_text(text: str, num: int, critique_by: str) -> list:
     return critique_list
 
 
+def outline_text(text: str, num: int) -> list:
+    """
+    Generates an outline using the OpenAI API
+    :param text: text to be outlined
+    :param num: number of points to generate
+    :return: a list of points
+    """
+    prompt = f"[{text}] \n make a list of {num} points that summarize the text in brackets above \n"
+    outline_list = generate_list(prompt, num)
+    return outline_list
+
+
+def generate_questions(text: str, num: int) -> list:
+    """
+    Generates questions using the OpenAI API
+    :param text: text to generate questions from
+    :param num: number of questions to generate
+    :return: a list of questions
+    """
+    prompt = f"[{text}] \n make a list of {num} questions that could be answered by the text in brackets above \n"
+    questions_list = generate_list(prompt, num)
+    return questions_list
+
+
 def analyze_text(text: str, analyze_for: str):
     """
     Analyzes text using the OpenAI API
@@ -463,10 +468,10 @@ def analyze_text(text: str, analyze_for: str):
     prompt = f"Is the following text {analyze_for}?: \n {text} \n"
     response = generate_text(prompt)
     if "yes" in response or "Yes" in response:
-        evaluation = generate_text(f"what is {analyze_for} in the following text? \n {text} \n")
+        evaluation = generate_text(f"what is {analyze_for} about the following text? \n {text} \n")
         return True, evaluation
     elif "no" in response or "No" in response:
-        evaluation = generate_text(f"what is not {analyze_for} in the following text? \n {text} \n")
+        evaluation = generate_text(f"what is not {analyze_for} about the following text? \n {text} \n")
         return False, evaluation
     else:
         return "Error", None
@@ -572,27 +577,35 @@ class Text:
     """
 
     def __init__(self, text: str):
+        self.questions = None
+        self.outline = None
+        self.analysis = {}
+        self.elaboration = None
+        self.summary = None
         self.results = {}
         self.title = str
         self.original_text = text
         self.critiques = None
-        self.wip_text = str
-        self.refined_text = text
+        self.wip_text = text
+        self.refined_text = None
         self.check_results = {}
         self.sentiment = str
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
-    def title(self, title_type: str = "normal text"):
+    def get_title(self, title_type: str = "normal text"):
         """
         Generate a title for the text. This is a wrapper for generate_title().
         :param title_type: the type of title to generate. This can be "normal text", "headline", "tweet", "blog post",
         :return: the title
         """
-        self.title = generate_title(self.refined_text, title_type)
+        if self.refined_text is None:
+            self.title = generate_title(self.original_text, title_type)
+        else:
+            self.title = generate_title(self.refined_text, title_type)
         return self.title
 
-    def summarize(self, num: int):
+    def summarize(self, num: int = 25):
         """
         Summarizes the text.
 
@@ -600,21 +613,52 @@ class Text:
         :return: the summarized text
 
         """
-        self.original_text = summarize_text(self.original_text, num)
-        return self.original_text
+        if self.refined_text is None:
+            self.summary = summarize_text(self.original_text, num)
+        else:
+            self.summary = summarize_text(self.refined_text, num)
 
+        return self.summary
+
+    def get_outline(self, num: int = 25):
+        """
+        Outlines the text.
+        :return: the outline
+        """
+        if self.refined_text is None:
+            self.outline = outline_text(self.original_text, num)
+        else:
+            self.outline = outline_text(self.refined_text, num)
+
+        return self.outline
+
+    def get_questions(self, num: int = 25):
+        """
+        Generates questions about the text.
+        :return: the questions
+        """
+        if self.refined_text is None:
+            self.questions = generate_questions(self.original_text, num)
+        else:
+            self.questions = generate_questions(self.refined_text, num)
+
+        return self.questions
     def elaborate(self) -> str:
         """
         Elaborates on the text.
         """
-        self.original_text = elaborate_text(self.original_text)
-        return self.original_text
+        if self.refined_text is None:
+            self.elaboration = elaborate_text(self.original_text)
+        else:
+            self.elaboration = elaborate_text(self.refined_text)
+        return self.elaboration
 
-    def critique(self, critique_by: str, num: int = 5,) -> list:
+    def criticize(self, critique_by: str, num: int = 5, ) -> list:
         """
         Generates a critique using the OpenAI API
+        :param critique_by: criteria to critique by. This can be "grammar", "style", "meaning", "logic", "relevance"
         :param num: number of critiques to generate
-        :param critique_by: criteria to critique by
+
 
         :return: a list of critiques
 
@@ -623,43 +667,25 @@ class Text:
         self.critiques = critique_text(self.original_text, num, critique_by)
         return self.critiques
 
-    def refine(self, critiques: list) -> str:
+    def refine(self, refine_by: str) -> str:
         """
         Refine text from the prompt using and refine_text.
-        :
+        :param critiques: a list of critiques to refine the text by
         :return: refined text
         """
-        self.wip_text = self.original_text
-        for critique in critiques:
-            self.wip_text = refine_text(self.wip_text, critique)
-        self.refined_text = self.wip_text
+        self.refined_text = refine_text(self.wip_text, refine_by)
         return self.refined_text
 
-    def check_original(self) -> dict:
+    def analyze(self, analyze_by: str) -> dict:
         """
-
-            check to see if the text is offensive, or objectionable in any way using analyse_text.
-
-            :return: a dict() of the results of the analysis for each of the check_list items.
-            """
-
-        for check in self.check_list:
-            result, evaluation = analyze_text(self.original_text, check)
-            self.check_results[check] = {"result": result, "evaluation": evaluation}
-        return self.results
-
-    def check_refined(self) -> dict:
+        Analyze text from the prompt using and analyse_text.
+        :param analyse_by: criteria to analyze by. This can be "offensive", "inappropriate", "unethical", "unlawful",
+        "unprofessional", "unfriendly", "illegal", "biased"
+        :return: a dict() of the results of the analysis
         """
-
-            check to see if the text is offensive, or objectionable in any way using analyse_text.
-
-            :return: a dict() of the results of the analysis for each of the check_list items.
-            """
-
-        for check in self.check_list:
-            result, evaluation = analyze_text(self.refined_text, check)
-            self.check_results[check] = {"result": result, "evaluation": evaluation}
-        return self.results
+        result, evaluation = analyze_text(self.original_text, analyze_by)
+        self.analysis[analyze_by] = {"result": result, "evaluation": evaluation}
+        return self.analysis
 
     def restyle(self, style) -> str:
         """
@@ -668,16 +694,17 @@ class Text:
         :param style: style to restyle to
         :return: restyled text
         """
-        self.original_text = restyle_text(self.original_text, style)
-        return self.original_text
+        self.refined_text = restyle_text(self.original_text, style)
+        return self.refined_text
 
-    def sentiment(self) -> str:
+    def analyze_sentiment(self) -> str:
         """
         Analyzes sentiment using the OpenAI API
         :return: sentiment analysis as a string
         """
         self.sentiment = sentiment_analysis(self.original_text)
         return self.sentiment
+
     def save(self, path: str):
         """
         Save the text to a file.
@@ -691,5 +718,3 @@ class Text:
         :param path: path to load the file from
         """
         self.original_text = load_text(path)
-# class ListObj:
-#
