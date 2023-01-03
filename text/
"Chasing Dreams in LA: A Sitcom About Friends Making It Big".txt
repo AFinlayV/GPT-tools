@@ -1,0 +1,16 @@
+original text - 
+
+A diverse group of friends living in the city of Los Angeles are all trying to make it big. They all have different dreams, from music, to movies, to fashion, but they all come together to help each other chase those dreams. They all live in the same apartment building and they all have different jobs. They are struggling to make ends meet and have to work multiple jobs to get by. Each episode follows their journey as they try to make it big in the city of dreams, while also dealing with the everyday struggles of life. Through their highs and lows, these friends remain loyal to each other and continue to support each other in their endeavors.
+refined text - <class 'gptools.gptools.GPTtext'>
+title:
+ 
+"Chasing Dreams in LA: A Sitcom About Friends Making It Big" 
+questions:
+ ['What types of dreams do the friends have?', 'What are their jobs?', 'How do they make ends meet?', 'How do they help each other chase their dreams?', 'What are some of the everyday struggles they face?'] 
+outline:
+ ['A group of diverse friends are trying to make it big in Los Angeles. ', 'They have different dreams, from music, to movies, to fashion. ', 'They all live in the same apartment building and are struggling to make ends meet. ', 'Each episode follows their journey as they try to make it big and deal with the everyday struggles of life. ', 'Despite highs and lows, these friends remain loyal and support each other in their endeavors.'] 
+critiques:
+ ['Incorporate more concrete details about the characters, their dreams and their jobs to make the story more vivid. ', 'Describe the everyday struggles in more detail to give readers a better sense of the story.', 'Use stronger verbs, adjectives, and adverbs to add more dynamism to the writing.', 'Include more dialogue among the characters to make the story feel more alive.', 'Check grammar, punctuation and spelling to ensure the text is clear and readable.'] 
+sentiment:
+ 
+The sentiment of this text is hopeful and supportive. 

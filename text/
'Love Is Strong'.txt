@@ -1,0 +1,51 @@
+original text - 
+
+Verse 1
+
+Love can be tricky, full of heartbreak and pain
+But if you just keep searching, you'll find it again
+Hold onto the hope that life will bring your way
+And show you a new path to true love one day
+
+Chorus
+Love is strong, and it's sweet
+It's the thing that keeps us complete
+It can bring us joy, and it can make us blue
+But without it, we just wouldn't have a clue
+
+Verse 2
+Relationships can be hard, but they can be great too
+They bring us together, when we're feeling blue
+No matter what life throws our way, we can rely
+On the strength of love to help us get by
+
+Chorus
+Love is strong, and it's sweet
+It's the thing that keeps us complete
+It can bring us joy, and it can make us blue
+But without it, we just wouldn't have a clue
+
+Bridge
+We can't always trust in ourselves, but we can trust in love
+It gives us the courage to carry on and rise above
+So don't lose faith in love, even when it's hard to see
+Just keep believing, and it will set you free
+
+Chorus
+Love is strong, and it's sweet
+It's the thing that keeps us complete
+It can bring us joy, and it can make us blue
+But without it, we just wouldn't have a clue
+refined text - <class 'gptools.gptools.GPTtext'>
+title:
+ 
+'Love Is Strong' 
+questions:
+ ['What is the main theme of this song?', 'What message does the chorus emphasize about love?', 'What does the bridge tell us about trusting in love?', 'What does the song suggest about how to cope with difficult relationships?', 'How does the song portray the power of love?'] 
+outline:
+ ["Love can be difficult to find and painful, but it's worth the search.", 'Relationships can be both difficult and rewarding.', 'Love is strong and keeps us complete.', 'We can rely on love to help us in difficult times.', 'Believing in love gives us the courage to carry on.'] 
+critiques:
+ ['Rewrite the chorus to make it more concise and impactful.', 'Include a simile or metaphor to illustrate the power of love. ', 'Add a few more descriptive adjectives to make the text more colorful and vivid.', 'Incorporate more active verbs to make the writing more energetic.', 'Use proper grammar and spelling throughout the text.'] 
+sentiment:
+ 
+The sentiment of this text is hopeful and optimistic. It acknowledges that love can be difficult, but encourages the listener to keep searching and to have faith in love. 

@@ -1,0 +1,56 @@
+original text - 
+
+Verse 1
+
+Out in Nature, I'm free to explore,
+Discovering the beauty under the sun;
+The world around us is so much more,
+Than what we can see, when we look around.
+
+Chorus
+
+Oh, Nature, you give us so much to see,
+The wonders of life, out in the wild;
+And in the outdoors, we can be free,
+Nature will be here, for us all the while.
+
+Verse 2
+
+The rolling hills and the babbling streams,
+The forests and the mountain air;
+The beauty of Nature is so grand,
+The world is full of mystery, everywhere.
+
+Chorus
+
+Oh, Nature, you give us so much to see,
+The wonders of life, out in the wild;
+And in the outdoors, we can be free,
+Nature will be here, for us all the while.
+
+Bridge
+
+Let us take care of the world around us,
+And all of its glory, from the sea to the sky;
+Let us cherish Nature, and love every sound,
+The beauty of Nature will never die.
+
+Chorus
+
+Oh, Nature, you give us so much to see,
+The wonders of life, out in the wild;
+And in the outdoors, we can be free,
+Nature will be here, for us all the while.
+refined text - <class 'gptools.gptools.GPTtext'>
+title:
+ 
+'Nature's Wonders' 
+questions:
+ ['What kind of wonders can be found in nature?', 'What is the purpose of the bridge in the song?', 'How can we show appreciation for Nature?', 'What are some examples of life that can be found in the wild?', 'How does the author feel about Nature?'] 
+outline:
+ ['Nature provides us with a world of beauty and mystery to explore.', 'The outdoors can give us a sense of freedom.', 'Nature has wonders ranging from rolling hills, babbling streams, forests, and mountain air.', 'We should take care of the world around us and cherish the beauty of Nature.', 'Nature will always be here for us to enjoy.'] 
+critiques:
+ ['Replace some of the longer words with more colloquial terms to make the writing more engaging and human. ', 'Reframe some of the sentences to make them more concise and impactful.', 'Replace some of the more generic words with more vivid and descriptive ones to add more color to the writing.', 'Double-check the grammar and spelling to ensure that the writing is as clear and concise as possible.', 'Add more details and descriptions to the verses and chorus to bring the imagery to life.'] 
+sentiment:
+ 
+The sentiment of this text is one of appreciation and admiration for nature and its beauty. 

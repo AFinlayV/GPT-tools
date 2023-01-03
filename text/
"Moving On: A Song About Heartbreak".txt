@@ -1,0 +1,50 @@
+original text - 
+
+Verse 1:
+I thought I could never feel this way
+So broken, so lost, so much pain
+I thought I could never survive this heartbreak
+But I'm here, I'm still standing, I'm still awake
+
+Chorus:
+Heartbreak, it's like a storm that never ends
+It's like a dark cloud that's always looming
+Heartbreak, it's like a weight on my shoulders
+But I won't let it keep me from moving on
+
+Verse 2:
+I used to be so strong, so sure of myself
+But now I'm struggling to find my way
+I used to have a plan, but now I'm left in the dark
+And I'm not sure what the future holds for me
+
+Chorus:
+Heartbreak, it's like a storm that never ends
+It's like a dark cloud that's always looming
+Heartbreak, it's like a weight on my shoulders
+But I won't let it keep me from moving on
+
+Bridge:
+I'm gonna pick myself up and keep on going
+I'm gonna find the strength to keep on believing
+I'm gonna keep my head up and keep my faith
+I'm gonna keep on living and keep on dreaming
+
+Chorus:
+Heartbreak, it's like a storm that never ends
+It's like a dark cloud that's always looming
+Heartbreak, it's like a weight on my shoulders
+But I won't let it keep me from moving on
+refined text - <class 'gptools.gptools.GPTtext'>
+title:
+ 
+"Moving On: A Song About Heartbreak" 
+questions:
+ ['What is the speaker feeling in Verse 1?', 'What does the speaker use to describe heartbreak in the Chorus?', 'How does the speaker feel about their future in Verse 2?', 'What is the speaker encouraging themselves to do in the Bridge?', 'How does the speaker describe the feeling of heartbreak in the Chorus?'] 
+outline:
+ ['Heartbreak is a storm that never ends, like a dark cloud always looming.', "It is like a weight on one's shoulders, but one must not let it keep them from moving on.", 'Once strong and sure of themselves, now one struggles to find their way.', 'To move on, one must pick themselves up, find their strength, keep their head up and keep their faith.', 'Living and dreaming must be kept in order to find a way to move on from heartbreak.'] 
+critiques:
+ ['Use more varied language to express emotion and make the text more engaging. ', 'Use proper grammar and spelling to make the text easier to read. ', 'Add more details and vivid imagery to help the reader visualize the story.', 'Use metaphors and analogies to make the text more powerful. ', 'Use active verbs and descriptive adjectives to further draw the reader in.'] 
+sentiment:
+ 
+The sentiment of this text is one of resilience and determination in the face of heartbreak. 

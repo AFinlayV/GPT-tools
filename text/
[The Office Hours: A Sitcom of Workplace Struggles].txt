@@ -1,0 +1,16 @@
+original text - 
+
+"The Office Hours" follows the lives of a group of coworkers working in an office. They must find a balance between their professional and personal lives in order to excel in the workplace. From the office gossip to the inter-office romances, these employees must figure out how to get through their days with their sanity intact. With a variety of characters, from the young and ambitious to the old-timers, this workplace comedy will take a humorous look at the highs and lows of trying to maintain one's career and personal life.
+refined text - <class 'gptools.gptools.GPTtext'>
+title:
+ 
+[The Office Hours: A Sitcom of Workplace Struggles] 
+questions:
+ ['What types of characters are featured in "The Office Hours"? ', 'How does the show explore the balance between professional and personal lives? ', 'What is the tone of the show? ', 'How does the show explore the dynamics of the workplace? ', 'What are some of the humorous moments in the show?'] 
+outline:
+ ['The Office Hours follows the lives of a group of coworkers who must find a balance between their professional and personal lives. ', 'From office gossip to inter-office romances, the employees must figure out how to get through their days with their sanity intact. ', 'This workplace comedy features a variety of characters ranging from the young and ambitious to the old-timers. ', "The show looks at the highs and lows of trying to maintain one's career and personal life in a humorous way. ", 'It focuses on how to navigate the complicated dynamics of working in an office environment.'] 
+critiques:
+ ['Update the language to make it more conversational and approachable.', 'Add more detail to the description of the characters, their relationships, and the dynamics within the office.', 'Clarify the tone of the show, so the reader can better understand what they can expect from the comedy.', 'Incorporate more vivid imagery to help bring the story to life.', 'Check for proper grammar and spelling throughout the text.'] 
+sentiment:
+ 
+The sentiment of this text is generally positive. It paints a humorous and relatable picture of the struggles of balancing work and personal life. 
