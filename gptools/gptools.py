@@ -226,9 +226,9 @@ def generate_story(plot: str, themes: str, characters: str, setting: str) -> str
     story = generate_story(plot, themes, characters, setting)
     print(story)
     """
-    story = generate_text(
-        f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n "
-        f"setting: {setting}")
+    prompt = f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n "\
+        f"setting: {setting}"
+    story = generate_text(prompt)
     return story
 
 
@@ -245,14 +245,13 @@ def generate_title(text: str, title_type: str) -> str:
     title = generate_title(text, title_type)
     print(title)
     """
-    prompt = \
-        f"[{text}]\n Generate a title for the text between brackets above, " \
-        f"assuming that the text is '{title_type}'.\n"
+    prompt = f"[{text}]\n Generate a title for the text between brackets above, " \
+             f"assuming that the text is '{title_type}'.\n"
     title = generate_text(prompt)
     return title
 
 
-def generate_list(prompt: str, n: int = 5) -> list:
+def generate_list(text: str, n: int = 5) -> list:
     """
     Generates a list using the OpenAI API
     :param prompt: text to use as a prompt
@@ -264,9 +263,9 @@ def generate_list(prompt: str, n: int = 5) -> list:
     list = generate_list(prompt, 5)
     print(list)
     """
-    response = generate_text(
-        f"Generate a numbered list of {n} items for the following prompt: \n {prompt}"
-        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc.")
+    prompt = f"Generate a numbered list of {n} items for the following prompt: \n {text}"\
+        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc."
+    response = generate_text(prompt)
     response_list = re.findall(r"\d\.\s(.*)", response)  # regex to extract list items from response text
     response_list = [x for x in response_list if x]  # remove empty strings
     return response_list
@@ -608,7 +607,9 @@ class GPTtext:
         self.get_outline()
         self.get_critiques()
         self.get_sentiment()
-        self.meta = {"title": self.title, "questions": self.questions, "outline": self.outline,
+        self.meta = {"title": self.title,
+                     "questions": self.questions,
+                     "outline": self.outline,
                      "critiques": self.critiques,
                      "sentiment": self.sentiment}
         return self.meta
