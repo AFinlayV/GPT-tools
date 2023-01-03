@@ -620,7 +620,6 @@ class GPTtext:
         """
 
         self.title = generate_title(self.original_text, self.title_type)
-
         return self.title
 
     def get_summary(self, num: int = 5) -> str:
@@ -633,7 +632,6 @@ class GPTtext:
         """
 
         self.summary = generate_summary(self.original_text, num)
-
         return self.summary
 
     def get_outline(self, num: int = 5) -> list:
@@ -643,7 +641,6 @@ class GPTtext:
         """
 
         self.outline = generate_outline(self.original_text, num)
-
         return self.outline
 
     def get_questions(self, num: int = 5) -> list:
@@ -652,7 +649,6 @@ class GPTtext:
         :return: the questions
         """
         self.questions = generate_questions(self.original_text, num)
-
         return self.questions
 
     def get_elaboration(self) -> str:
@@ -660,7 +656,6 @@ class GPTtext:
         Elaborates on the text.
         """
         self.elaboration = elaborate_text(self.original_text)
-
         return self.elaboration
 
     def get_critiques(self,
@@ -677,7 +672,6 @@ class GPTtext:
         """
 
         self.critiques = generate_critiques(self.original_text, num, critique_by)
-
         return self.critiques
 
     def get_sentiment(self) -> str:
@@ -686,7 +680,6 @@ class GPTtext:
         :return: sentiment analysis as a string
         """
         self.sentiment = sentiment_analysis(self.original_text)
-
         return self.sentiment
 
     def refine(self, refine_by: str):
