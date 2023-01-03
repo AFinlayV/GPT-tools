@@ -242,7 +242,7 @@ def generate_title(text: str, title_type: str) -> str:
     print(title)
     """
     prompt = f"[{text}]\n Generate a title for the text between brackets above, " \
-             f"assuming that the text is '{title_type}'.\n"
+             f"assuming that the text is the following style of writing:'{title_type}'.\n"
     title = generate_text(prompt)
     return title
 
@@ -250,7 +250,7 @@ def generate_title(text: str, title_type: str) -> str:
 def generate_list(text: str, n: int = 5) -> list:
     """
     Generates a list using the OpenAI API
-    :param prompt: text to use as a prompt
+    :param text: text to use in constructing the prompt
     :param n: number of items in the list
     :return: generated list as a list
 
