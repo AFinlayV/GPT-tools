@@ -258,10 +258,10 @@ def generate_title(text: str, title_type: str) -> str:
     Example usage:
     text = "A dialogue between two characters discussing the history of Artificial Intelligence"
     title_type = "movie"
-    title = generate_title(text)
+    title = generate_title(text, title_type)
     print(title)
     """
-    prompt = f"Generate a title for the following text, assuming that the text is a {title_type}: \n {text} \n"
+    prompt = f"[{text}]\n Generate a title for the text between brackets above, assuming that the text is '{title_type}'"
     title = generate_text(prompt)
     return title
 
@@ -562,8 +562,6 @@ class Prompt:
         for check in self.check_list:
             result, evaluation = analyze_text(self.prompt, check)
             self.check_results[check] = {"result": result, "evaluation": evaluation}
-        pi_result, pi_evaluation = is_prompt_injection(self.prompt)
-        self.check_results["prompt_injection"] = {"result": pi_result, "evaluation": pi_evaluation}
         return self.check_results
 
 
@@ -574,16 +572,24 @@ class Text:
 
     def __init__(self, text: str):
         self.results = {}
+        self.title = str
         self.original_text = text
         self.critiques = None
         self.wip_text = str
-        self.refined_text = None
+        self.refined_text = text
         self.check_results = {}
         self.sentiment = str
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
-
+    def title(self, title_type: str = "normal text"):
+        """
+        Generate a title for the text. This is a wrapper for generate_title().
+        :param title_type: the type of title to generate. This can be "normal text", "headline", "tweet", "blog post",
+        :return: the title
+        """
+        self.title = generate_title(self.refined_text, title_type)
+        return self.title
 
     def summarize(self, num: int):
         """
@@ -671,6 +677,18 @@ class Text:
         """
         self.sentiment = sentiment_analysis(self.original_text)
         return self.sentiment
+    def save(self, path: str):
+        """
+        Save the text to a file.
+        :param path: path to save the file to
+        """
+        save_text(self.original_text, path)
 
+    def load(self, path: str):
+        """
+        Load text from a file.
+        :param path: path to load the file from
+        """
+        self.original_text = load_text(path)
 # class ListObj:
 #
