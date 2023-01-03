@@ -414,7 +414,7 @@ def elaborate_text(text: str):
     elaboration = elaborate_text(text)
     print(elaboration)
     """
-    prompt = f"Being very truthful, detailed, and verbose; " \
+    prompt = f"Being very truthful, detailed, and verbose, " \
              f"rewrite the following text to include as much relevant information as possible: \n {text} \n "
     response = generate_text(prompt)
     return response

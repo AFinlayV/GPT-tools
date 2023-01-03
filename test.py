@@ -13,7 +13,6 @@ def main():
     """
     test the methods in ai.GPTtext object
     """
-
     topic_list = ai.generate_list("good subjects for song lyrics", 5)
     for topic in topic_list:
         print(topic)
