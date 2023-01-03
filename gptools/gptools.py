@@ -613,6 +613,7 @@ class GPTtext:
     def get_meta(self) -> dict:
         """
         generate metadata for the text.
+        :return: a dict() of the metadata for the text.
         """
         self.get_title()
         self.get_questions()
@@ -637,8 +638,7 @@ class GPTtext:
 
     def get_summary(self, num: int = 5) -> str:
         """
-        Summarizes the text.
-
+        Summarize the text in self.original_text.
         :param num: number of words to summarize to
         :return: the summarized text
 
@@ -649,7 +649,7 @@ class GPTtext:
 
     def get_outline(self, num: int = 5) -> list:
         """
-        Outlines the text.
+        Outlines the text stored in self.original_text.
         :param num: number of points in the outline
         :return: the outline
         """
@@ -659,7 +659,7 @@ class GPTtext:
 
     def get_questions(self, num: int = 5) -> list:
         """
-        Generates questions about the text.
+        Generates questions about the text stored in self.original_text.
         :param num: number of questions to generate
         :return: the questions
         """
@@ -668,7 +668,8 @@ class GPTtext:
 
     def get_elaboration(self) -> str:
         """
-        Elaborates on the text.
+        Elaborates on the text stored in self.original_text.
+        :return: the elaboration as a string
         """
         self.elaboration = elaborate_text(self.original_text)
         return self.elaboration
@@ -677,7 +678,7 @@ class GPTtext:
                       critique_by: str = "make the writing more engaging and human, with proper grammar and spelling",
                       num: int = 5, ) -> list:
         """
-        Generates a critique using the OpenAI API
+        Generates a critique of the text stored in self.original_text.
         :param critique_by: criteria to critique by. This can be "grammar", "style", "meaning", "logic", "relevance"
         :param num: number of critiques to generate
         :return: a list of critiques
@@ -688,7 +689,7 @@ class GPTtext:
 
     def get_sentiment(self) -> str:
         """
-        Analyzes sentiment using the OpenAI API
+        Analyzes sentiment of the text stored in self.original_text.
         :return: sentiment analysis as a string
         """
         self.sentiment = sentiment_analysis(self.original_text)
@@ -696,7 +697,7 @@ class GPTtext:
 
     def refine(self, refine_by: str):
         """
-        Refine text from the prompt using and refine_text.
+        Refine text stored in self.original_text by changing according to criteria defined by refine_by.
         :param refine_by: criteria to refine by. This can be "grammar", "style", "meaning", "logic", "relevance"
         :return: refined text
         """
@@ -705,7 +706,7 @@ class GPTtext:
 
     def analyze(self, analyze_by: str):
         """
-        Analyze text from the prompt using and analyse_text.
+        Analyze text stored in self.original_text by the criteria in analyze_by.
         :param analyze_by: criteria to analyze by. This can be "offensive", "inappropriate", "unethical", "unlawful",
         "unprofessional", "unfriendly", "illegal", "biased"
         :return: a dict() of the results of the analysis
@@ -717,7 +718,7 @@ class GPTtext:
 
     def restyle(self, style) -> str:
         """
-        Restyle text using the OpenAI API
+        Restyle text stored in self.original_text.
         :param style: style to restyle to
         :return: restyled text
         """
