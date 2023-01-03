@@ -719,10 +719,14 @@ class GPTtext:
         :param path: path to save the file to
         """
         with open(path, "a") as f:
-            f.write(self.original_text)
-            f.write("\n")
-            for key, value in self.meta.items():
-                f.write(f"{key}:\n {value} \n")
+            f.write(f"original text - {self.original_text}\n")
+            if self.restyled_text != "":
+                f.write(f"restyled text - {self.restyled_text}\n")
+            if self.refined_text != "":
+                f.write(f"refined text - {self.refined_text}\n")
+            if self.meta != {}:
+                for key, value in self.meta.items():
+                    f.write(f"{key}:\n {value} \n")
 
     def load(self, path: str):
         """
