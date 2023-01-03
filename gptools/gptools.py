@@ -9,20 +9,16 @@ API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 A set of functions for generating text and images using the OpenAI API
 and a set of classes that use those functions to generate text and images
 
+Functions:
 1. General utility functions
 2. Text and image generation functions
 3. Text modification functions
 4. Text analysis functions
 
+Classes:
+GPTprompt: a class for generating text using the OpenAI API
+GPTtext: a class for manipulating and analysing text using the OpenAI API
 
-
-List of functions:
-#put a list of functions here
-
-List of classes:
-#put a list of classes here
-
-#TODO: 
 
 """
 
@@ -30,7 +26,6 @@ List of classes:
 1.Utility functions
 
 A set of basic functions that are useful for working with GPT-3 and DALL-E.
-
 
 api_login() - returns the api key from the text file
 save_text(text, filename) - saves text to a text file
@@ -45,6 +40,7 @@ def api_login(api_key_path=API_KEY_PATH):
     Logs into the OpenAI API using the path to a text file containing the API key
     :param api_key_path: path to the text file containing the API key formatted as a string,
         default is the API_KEY_PATH variable
+
     Example usage:
     API_KEY_PATH = "/Users/User/API Keys/OpenAI_API_key.txt"
     api_login(API_KEY_PATH)
@@ -299,6 +295,12 @@ def generate_questions(text: str, num: int) -> list:
     :param text: text to generate questions from
     :param num: number of questions to generate
     :return: a list of questions
+
+    Example usage:
+    text = "The quick brown fox jumps over the lazy dog"
+    num = 5
+    questions = generate_questions(text, num)
+    print(questions)
     """
     prompt = f"[{text}] \n make a list of {num} questions that could be asked about the text in brackets above \n"
     questions_list = generate_list(prompt, num)
@@ -311,8 +313,14 @@ def generate_critiques(text: str, num: int, critique_by: str) -> list:
     :param text: text to be critiqued
     :param num: number of critiques to generate
     :param critique_by: criteria to critique by
-
     :return: a list of critiques
+
+    Example usage:
+    text = "The quick brown fox jumps over the lazy dog"
+    num = 5
+    critique_by = "grammar"
+    critiques = generate_critiques(text, num, critique_by)
+    print(critiques)
     """
     prompt = f"[{text}] \n make a list of {num} ways to improve the text in brackets above, " \
              f"in the following way: {critique_by}\n"
@@ -326,6 +334,12 @@ def generate_outline(text: str, num: int) -> list:
     :param text: text to be outlined
     :param num: number of points to generate
     :return: a list of points
+
+    Example usage:
+    text = "The quick brown fox jumps over the lazy dog"
+    num = 5
+    outline = generate_outline(text, num)
+    print(outline)
     """
     prompt = f"[{text}] \n make a list of {num} points that summarize the text in brackets above \n"
     outline_list = generate_list(prompt, num)
@@ -447,7 +461,6 @@ def sort_list(unsorted_list: list, sort_by: str) -> list:
 
 These functions analyze text in various ways.
 
-generate_critiques() - critiques text using the OpenAI API
 analyze_text() - analyzes text using the OpenAI API
 is_prompt_injection() - checks if a prompt is an injection attack using the OpenAI API
 sentiment_analysis() - analyzes sentiment using the OpenAI API
@@ -563,9 +576,8 @@ class GPTprompt:
 
     def check(self):
         """
-
-        check to see if the prompt is offensive, or objectionable in any way using analyse_text.
-
+        check to see if the prompt is offensive, or objectionable in any way using analyse_text and the list
+        stored in self.check_list.
         :return: a dict() of the results of the analysis for each of the check_list items.
 
         """
@@ -627,7 +639,7 @@ class GPTtext:
         """
         Summarizes the text.
 
-        param num: number of words to summarize to
+        :param num: number of words to summarize to
         :return: the summarized text
 
         """
@@ -638,6 +650,7 @@ class GPTtext:
     def get_outline(self, num: int = 5) -> list:
         """
         Outlines the text.
+        :param num: number of points in the outline
         :return: the outline
         """
 
@@ -647,6 +660,7 @@ class GPTtext:
     def get_questions(self, num: int = 5) -> list:
         """
         Generates questions about the text.
+        :param num: number of questions to generate
         :return: the questions
         """
         self.questions = generate_questions(self.original_text, num)
@@ -666,10 +680,7 @@ class GPTtext:
         Generates a critique using the OpenAI API
         :param critique_by: criteria to critique by. This can be "grammar", "style", "meaning", "logic", "relevance"
         :param num: number of critiques to generate
-
-
         :return: a list of critiques
-
         """
 
         self.critiques = generate_critiques(self.original_text, num, critique_by)
@@ -707,7 +718,6 @@ class GPTtext:
     def restyle(self, style) -> str:
         """
         Restyle text using the OpenAI API
-
         :param style: style to restyle to
         :return: restyled text
         """
