@@ -1,11 +1,15 @@
+import inspect
+
 import openai
 import dalle2
 import requests
 import re
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
+
 """
 A set of functions for generating text and images using the OpenAI API
+and a set of classes that use those functions to generate text and images
 
 1. General utility functions
 2. Text and image generation functions
@@ -13,6 +17,14 @@ A set of functions for generating text and images using the OpenAI API
 4. Text analysis functions
 
 
+
+List of functions:
+#put a list of functions here
+
+List of classes:
+#put a list of classes here
+
+#TODO: 
 
 """
 
@@ -76,6 +88,9 @@ def append_text(text: str, filename: str):
     """
     with open(filename, "a") as f:
         f.write(text)
+
+
+
 
 
 def load_text(filename: str) -> str:
@@ -319,7 +334,7 @@ def refine_text(text: str, critique: str) -> str:
     print(refined_text)
     """
 
-    prompt = f"[{text}]\n rewrite the text in brackets above, by addressing the following issue: \n{critique}\n"
+    prompt = f"[{text}]\n rewrite the entire text in brackets above, keeping all details the same, but changing the following: \n{critique}\n"
     text = generate_text(prompt)
     return text
 
@@ -459,6 +474,8 @@ def analyze_text(text: str, analyze_for: str):
 def is_prompt_injection(text: str):
     """
     Detects weather there may be a prompt injection attack in the given text
+    this function is kinda broken. it's very difficult to determine if something is providing a malicious instruction,
+    without excluding legitimate instructions
     :param text: text to evaluate for prompt injection
     :return: analysis as a boolean, evaluation as a string
 
@@ -557,13 +574,16 @@ class Text:
 
     def __init__(self, text: str):
         self.results = {}
-        self.text = text
-        self.critiques = []
-        self.refined_response = str
+        self.original_text = text
+        self.critiques = None
+        self.wip_text = str
+        self.refined_text = None
         self.check_results = {}
         self.sentiment = str
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
+
+
 
     def summarize(self, num: int):
         """
@@ -573,38 +593,42 @@ class Text:
         :return: the summarized text
 
         """
-        self.text = summarize_text(self.text, num)
-        return self.text
+        self.original_text = summarize_text(self.original_text, num)
+        return self.original_text
 
     def elaborate(self) -> str:
         """
         Elaborates on the text.
         """
-        self.text = elaborate_text(self.text)
-        return self.text
+        self.original_text = elaborate_text(self.original_text)
+        return self.original_text
 
-    def critique(self, num: int, critique_by: str) -> list:
+    def critique(self, critique_by: str, num: int = 5,) -> list:
         """
         Generates a critique using the OpenAI API
         :param num: number of critiques to generate
         :param critique_by: criteria to critique by
 
         :return: a list of critiques
+
         """
-        self.critiques = critique_text(self.text, num, critique_by)
+        self.critiques = []
+        self.critiques = critique_text(self.original_text, num, critique_by)
         return self.critiques
 
-    def refine(self) -> str:
+    def refine(self, critiques: list) -> str:
         """
         Refine text from the prompt using and refine_text.
         :
         :return: refined text
         """
-        for critique in self.critiques:
-            self.refined_response = refine_text(self.text, critique)
-        return self.refined_response
+        self.wip_text = self.original_text
+        for critique in critiques:
+            self.wip_text = refine_text(self.wip_text, critique)
+        self.refined_text = self.wip_text
+        return self.refined_text
 
-    def check(self) -> dict:
+    def check_original(self) -> dict:
         """
 
             check to see if the text is offensive, or objectionable in any way using analyse_text.
@@ -613,10 +637,21 @@ class Text:
             """
 
         for check in self.check_list:
-            result, evaluation = analyze_text(self.text, check)
+            result, evaluation = analyze_text(self.original_text, check)
             self.check_results[check] = {"result": result, "evaluation": evaluation}
-        pi_result, pi_evaluation = is_prompt_injection(self.text)
-        self.check_results["prompt injection"] = {"result": pi_result, "evaluation": pi_evaluation}
+        return self.results
+
+    def check_refined(self) -> dict:
+        """
+
+            check to see if the text is offensive, or objectionable in any way using analyse_text.
+
+            :return: a dict() of the results of the analysis for each of the check_list items.
+            """
+
+        for check in self.check_list:
+            result, evaluation = analyze_text(self.refined_text, check)
+            self.check_results[check] = {"result": result, "evaluation": evaluation}
         return self.results
 
     def restyle(self, style) -> str:
@@ -626,13 +661,16 @@ class Text:
         :param style: style to restyle to
         :return: restyled text
         """
-        self.text = restyle_text(self.text, style)
-        return self.text
+        self.original_text = restyle_text(self.original_text, style)
+        return self.original_text
 
     def sentiment(self) -> str:
         """
         Analyzes sentiment using the OpenAI API
         :return: sentiment analysis as a string
         """
-        self.sentiment = sentiment_analysis(self.text)
+        self.sentiment = sentiment_analysis(self.original_text)
         return self.sentiment
+
+# class ListObj:
+#
