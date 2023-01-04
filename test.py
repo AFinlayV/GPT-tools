@@ -39,9 +39,11 @@ def main():
     print(story.text)
     for key in story.meta:
         print(f"{key}:\n {story.meta[key]}")
-    print(story.critiques)
+    story.refined_text = story.text
+    for critique in story.critiques:
+        story.refined_text = ai.refine_text(story.refined_text, critique)
+        print(f"\nCritique: \n\n {critique} \n New Draft of Story:\n\n {story.refined_text}")
 
-    print(story.refined_text.text)
 
 
 if __name__ == "__main__":
