@@ -121,7 +121,7 @@ generate_summary() - generates a summary using the OpenAI API
 """
 
 
-def generate_text(prompt: str, model="text-davinci-003", temperature=0.7) -> str:
+def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_tokens=256) -> str:
     """
     Generates text using the OpenAI API
     :param prompt: text to use as a prompt
@@ -136,7 +136,7 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7) -> str
     try:
         response = openai.Completion.create(engine=model,
                                             prompt=prompt,
-                                            max_tokens=2048,
+                                            max_tokens=max_tokens,
                                             temperature=temperature,
                                             n=1)
         return response["choices"][0]["text"]
@@ -205,29 +205,6 @@ def generate_image_prompt(text: str, style: str) -> str:
     return full_prompt
 
 
-def generate_story(plot: str, themes: str, characters: str, setting: str) -> str:
-    """
-    Generates a story using the OpenAI API
-    :param plot: plot to use
-    :param themes: themes to use
-    :param characters: characters to use
-    :param setting: setting to use
-    :return: generated story as a string
-
-    Example usage:
-    plot = "a stranger came to town"
-    themes = "love, revenge, friendship"
-    characters = "a lovable hero, a villain, a sidekick"
-    setting = "a small town"
-    story = generate_story(plot, themes, characters, setting)
-    print(story)
-    """
-    prompt = f"Write a story about the following:\n plot:{plot} \n themes: {themes} \n characters: {characters} \n "\
-        f"setting: {setting}"
-    story = generate_text(prompt)
-    return story
-
-
 def generate_title(text: str, title_type: str) -> str:
     """
     Generates a title using the OpenAI API
@@ -259,8 +236,8 @@ def generate_list(text: str, n: int = 5) -> list:
     list = generate_list(prompt, 5)
     print(list)
     """
-    prompt = f"Generate a numbered list of {n} items for the following prompt: \n {text}"\
-        f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc."
+    prompt = f"Generate a numbered list of {n} items for the following prompt: \n {text}" \
+             f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc."
     response = generate_text(prompt)
     response_list = re.findall(r"\d\.\s(.*)", response)  # regex to extract list items from response text
     response_list = [x for x in response_list if x]  # remove empty strings
@@ -547,10 +524,13 @@ class GPTprompt:
     A prompt for the OpenAI API.
     """
 
-    def __init__(self, prompt):
-        self.prompt = prompt
-        self.response = str
-        self.check_results = dict()
+    def __init__(self):
+        self.prompt = ""
+        self.response = ""
+        self.model = "text-davinci-003"
+        self.temperature = 0.7
+        self.max_tokens = 256
+        self.check_results = {}
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
@@ -558,7 +538,7 @@ class GPTprompt:
         """
         Generate text from the prompt.
         """
-        self.response = generate_text(self.prompt)
+        self.response = generate_text(self.prompt, self.model, self.temperature, self.max_tokens)
         return self.response
 
     def generate_list(self, num: int) -> list:
@@ -592,7 +572,7 @@ class GPTtext:
     text for editing, revision and analysis.
     """
 
-    def __init__(self, text_input: str):
+    def __init__(self):
         self.restyled_text = ""
         self.questions = []
         self.outline = []
@@ -602,10 +582,9 @@ class GPTtext:
         self.results = {}
         self.title_type = "normal text"
         self.title = ""
-        self.original_text = text_input
+        self.text = ""
         self.critiques = []
-        self.wip_text = text_input
-        self.refined_text = GPTtext
+        self.refined_text = ""
         self.check_results = {}
         self.sentiment = ""
         self.meta = {}
@@ -633,7 +612,7 @@ class GPTtext:
         :return: the title
         """
 
-        self.title = generate_title(self.original_text, self.title_type)
+        self.title = generate_title(self.text, self.title_type)
         return self.title
 
     def get_summary(self, num: int = 5) -> str:
@@ -644,7 +623,7 @@ class GPTtext:
 
         """
 
-        self.summary = generate_summary(self.original_text, num)
+        self.summary = generate_summary(self.text, num)
         return self.summary
 
     def get_outline(self, num: int = 5) -> list:
@@ -654,7 +633,7 @@ class GPTtext:
         :return: the outline
         """
 
-        self.outline = generate_outline(self.original_text, num)
+        self.outline = generate_outline(self.text, num)
         return self.outline
 
     def get_questions(self, num: int = 5) -> list:
@@ -663,7 +642,7 @@ class GPTtext:
         :param num: number of questions to generate
         :return: the questions
         """
-        self.questions = generate_questions(self.original_text, num)
+        self.questions = generate_questions(self.text, num)
         return self.questions
 
     def get_elaboration(self) -> str:
@@ -671,7 +650,7 @@ class GPTtext:
         Elaborates on the text stored in self.original_text.
         :return: the elaboration as a string
         """
-        self.elaboration = elaborate_text(self.original_text)
+        self.elaboration = elaborate_text(self.text)
         return self.elaboration
 
     def get_critiques(self,
@@ -684,7 +663,7 @@ class GPTtext:
         :return: a list of critiques
         """
 
-        self.critiques = generate_critiques(self.original_text, num, critique_by)
+        self.critiques = generate_critiques(self.text, num, critique_by)
         return self.critiques
 
     def get_sentiment(self) -> str:
@@ -692,16 +671,19 @@ class GPTtext:
         Analyzes sentiment of the text stored in self.original_text.
         :return: sentiment analysis as a string
         """
-        self.sentiment = sentiment_analysis(self.original_text)
+        self.sentiment = sentiment_analysis(self.text)
         return self.sentiment
 
     def refine(self, refine_by: str):
         """
         Refine text stored in self.original_text by changing according to criteria defined by refine_by.
         :param refine_by: criteria to refine by. This can be "grammar", "style", "meaning", "logic", "relevance"
+                or it can be a critique generated by generate_critiques()
         :return: refined text
         """
-        self.refined_text = GPTtext(refine_text(self.wip_text, refine_by))
+        data = GPTtext()
+        data.text = refine_text(self.text, refine_by)
+        self.refined_text = data
         return self.refined_text
 
     def analyze(self, analyze_by: str):
@@ -712,7 +694,7 @@ class GPTtext:
         :return: a dict() of the results of the analysis
         """
 
-        result, evaluation = analyze_text(self.original_text, analyze_by)
+        result, evaluation = analyze_text(self.text, analyze_by)
         self.analysis[analyze_by] = {"result": result, "evaluation": evaluation}
         return self.analysis
 
@@ -722,7 +704,7 @@ class GPTtext:
         :param style: style to restyle to
         :return: restyled text
         """
-        self.restyled_text = restyle_text(self.original_text, style)
+        self.restyled_text = restyle_text(self.text, style)
         return self.restyled_text
 
     def save(self, path: str):
@@ -731,7 +713,7 @@ class GPTtext:
         :param path: path to save the file to
         """
         with open(path, "a") as f:
-            f.write(f"original text - {self.original_text}\n")
+            f.write(f"original text - {self.text}\n")
             if self.restyled_text != "":
                 f.write(f"restyled text - {self.restyled_text}\n")
             if self.refined_text != "":
@@ -745,4 +727,59 @@ class GPTtext:
         Load text from a file.
         :param path: path to load the file from
         """
-        self.original_text = load_text(path)
+        self.text = load_text(path)
+
+
+class Story(GPTtext):
+    """
+    A class for generating stories.
+    Story inherits from GPTtext.
+    """
+
+    def __init__(self, ):
+        super().__init__()
+        self.story_prompt = GPTprompt()
+        self.refined_story = ""
+        self.genre = ""
+        self.plot = ""
+        self.character_descriptions = {}
+        self.settings = []
+        self.themes = []
+        self.story_outline = {}
+
+    def get_story_prompt(self) -> GPTprompt:
+        """
+        generate a prompt object to use to generate an original story.
+        :return: GPTprompt object with a fully formed prompt to generate a story
+        """
+        prompt = f"Generate a story using the following list of details:" \
+                 f"Genre: {self.genre}\n " \
+                 f"Plot: {self.plot}\n "
+        if self.character_descriptions != {}:
+            prompt += f"Character Descriptions:"
+            for name, description in self.character_descriptions:
+                prompt += f"{name}: {description}\n"
+        if self.settings:
+            prompt += f"Settings:"
+            for setting in self.settings:
+                prompt += f"{setting}\n"
+        if self.themes:
+            prompt += f"Themes:"
+            for theme in self.themes:
+                prompt += f"{theme}\n"
+        if self.story_outline:
+            prompt += f"Story Outline:"
+            for key, value in self.story_outline:
+                prompt += f"{key}: {value}\n"
+        story_prompt = GPTprompt()
+        story_prompt.prompt = prompt
+        self.story_prompt = story_prompt
+        return story_prompt
+
+    def get_story(self):
+        """
+        Generate a story.
+        :return: the story
+        """
+        self.text = self.story_prompt.generate_text()
+        return self.text
