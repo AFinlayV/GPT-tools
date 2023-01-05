@@ -136,6 +136,8 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     text = generate_text(prompt)
     print(text)
     """
+    if len(prompt) > 2048:
+        prompt = generate_summary(prompt)
     try:
         response = openai.Completion.create(engine=model,
                                             prompt=prompt,
@@ -326,65 +328,46 @@ def generate_outline(text: str, num: int) -> list:
     return outline_list
 
 
-# def generate_summary_long(text, summary_tokens: int, max_tokens: int, summary_topic: str = "") -> str:
-#     """
-#
-#     this function is not working yet, it causes a recursive loop that makes an infinite number of requests to the API.
-#     I'm not sure why this is happening, but I'm leaving it here in case I can figure it out in the future.
-#
-#     Generates a summary of text that is too long to do in one shot
-#     :param text: text to be summarized
-#     :param summary_tokens: number of tokens in the summary
-#     :param max_tokens: maximum number of tokens to use in each request
-#     :param summary_topic: specific topic to focus on in the summary
-#     :return:
-#     """
-#     num = num_tokens(text)
-#     num_chunks = math.ceil(num / max_tokens)
-#     chunk_size = math.ceil(len(text) / num_chunks)
-#     chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
-#     summary = ""
-#     summary_chunk_size = math.ceil(summary_tokens / num_chunks)
-#     for chunk in chunks:
-#         summary += generate_summary(chunk, summary_chunk_size, max_tokens, summary_topic)
-#     return summary
-
-
-def generate_summary(text: str, max_tokens: int = 2000, summary_topic: str = "") -> str:
+def generate_summary(data: str, max_tokens: int = 1000, summary_topic: str = "") -> str:
     """
     Summarizes text using the OpenAI API
     :param max_tokens: maximum number of tokens to allow in the summary, default is 2000
     :param summary_topic: the topic you want the summary to focus on, defaults to "general summary"
-    :param summary_tokens: length of summary in words, defaults to 100
-    :param text: text to summarize
+    :param data: data to summarize
     :return: summarized text as a string
-
-    Example usage:
-    text = "The field of artificial
-    intelligence (AI) has a long and complex history, with roots stretching back to ancient civilizations and the
-    development of early calculating machines. In the modern era,...blah blah blah, etc"
-    summary = summarize_text(text)
-    print(summary)
     """
+    if type(data) == str:
+        # Data is already a string, so no need to convert it
+        text = data
+    else:
+        # Convert data to a string
+        text = json.dumps(data)
     text_tokens = int(num_tokens(text))
-    try:
-        if text_tokens < max_tokens:
-            print("Text is shorter than summary length, returning text")
-            return text
-        elif text_tokens > max_tokens:
-            raise (Exception(
-                "Text is too long to summarize in one request, and generate_summary_long() creates an infinite recursion loop sometimes, Fix this funtion in the future"))
-            # return generate_summary_long(text, summary_tokens, max_tokens, summary_topic)
-        else:
-            prompt = f"Summarize the following text in brackets [] at the end of this prompt." \
-                     f" The summary should be {max_tokens} words long."
+    summaries = []
+    if text_tokens > max_tokens:
+        # Split the text into chunks of `max_tokens` size
+        chunks = []
+        for i in range(0, len(text), max_tokens):
+            chunk = text[i:i + max_tokens]
+            chunks.append(chunk)
+        for chunk in chunks:
+            # Generate summary for each chunk
+            prompt = f"Summarize the following text in brackets [] at the end of this prompt."
             if summary_topic:
                 prompt += f"Focus on details related to {summary_topic}:\n"
-            prompt += f"Text to be summarized:\n[{text}]\n"
+            prompt += f"Text to be summarized:\n[{chunk}]\n"
             summary = generate_text(prompt)
-        return summary
-    except Exception as e:
-        print(e)
+            summaries.append(summary)
+        # Join the summaries together
+        summary = " ".join(summaries)
+    else:
+        # Generate summary for the whole text
+        prompt = f"Summarize the following text in brackets [] at the end of this prompt."
+        if summary_topic:
+            prompt += f"Focus on details related to {summary_topic}:\n"
+        prompt += f"Text to be summarized:\n[{text}]\n"
+        summary = generate_text(prompt)
+    return summary
 
 
 """
@@ -553,16 +536,17 @@ def sentiment_analysis(text: str):
     return response
 
 
-def num_tokens(text: str) -> int:
+def num_tokens(data) -> int:
     """
     Counts the number of tokens in a string of text
-    :param text: text to count the number of tokens in
-    :return: number of tokens in the text
+    :param data: data to count the number of tokens in
+    :return: number of tokens in the data
 
     Example usage:
     text = "I like cute dogs"
     num_tokens(text)
     """
+    text = json.dumps(data)
     return len(text.split())
 
 
@@ -583,8 +567,9 @@ class Prompt:
         self.response = ""
         self.model = "text-davinci-003"
         self.temperature = 0.7
-        self.max_tokens = 2000
+        self.max_tokens = 512
         self.check_results = {}
+        self.query = ""
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
@@ -630,12 +615,12 @@ class Prompt:
             self.check_results[check] = {"result": result, "evaluation": evaluation}
         return self.check_results
 
-    def prompt_constructor(self, identity: str = "", context: str = "", format: str = "", query: str = "") -> str:
+    def prompt_constructor(self, identity: str = "", context="", format_example: str = "", query: str = "") -> str:
         """
         Constructs a prompt for the OpenAI API
         :param identity: the identity of the user, e.g. "Your name is Bob, and you are a social media manager..."
         :param context: the context of the query, e.g. "You are working on a social media campaign for a new..."
-        :param format: the format of the response, e.g. "Blog Post format examples:..."
+        :param format_example: the format of the response, e.g. "Blog Post format examples:..."
         :param query: the query, e.g. "Write a Blog post about..."
         :return: the constructed prompt
 
@@ -650,6 +635,7 @@ class Prompt:
         prompt.generate_text()
         print(prompt.response)
         """
+        self.query = query
         self.prompt = f"You are a Large Language Model, but for the purposes of this response, " \
                       f"respond according to the following details:\n"
         if identity:
@@ -660,14 +646,14 @@ class Prompt:
             self.prompt += f"Respond to the query in brackets [] at the end of this prompt as if " \
                            f"the query was asked in the following context:\nContext:\n" \
                            f"{context}\n "
-        if format:
+        if format_example:
             self.prompt += f"Format your response like" \
                            f"the examples in parentheses () below:\nFormat:\n" \
-                           f"({format})\n"
+                           f"({format_example})\n"
         if query:
             self.prompt += f"Respond to the following query as if you are the identity listed above. You dont need to " \
                            f"include details from the identity or context unless they are relevant to the query " \
-                           f"below\nQuery:\n[{query}]\n"
+                           f"below\nQuery:\n[{self.query}]\n"
         return self.prompt
 
 
@@ -903,21 +889,22 @@ summary of the conversation that stays under the token limit?
 class Memory:
     def __init__(self):
         self.data = {}  # Initialize the data attribute as an empty dictionary
+        self.summary = None  # Initialize the summary attribute as None
 
-    def add_interaction(self, text: str, response: str):
+    def add_interaction(self, prompt: str, response: str):
         # Store the current interaction in the data attribute
         self.data[time.time()] = {
-            "input": text,
+            "input": prompt,
             "output": response
         }
 
-    def generate_summary(self) -> str:
-        # Generate a summary of past interactions by using the ai.generate_summary() function
+    def generate_summary(self, max_tokens: int = 100) -> str:
+        # Generate a summary of past interactions by using the generate_summary() function
         memories = ""
         for interaction in self.data.values():
             memories += f"{interaction['input']} {interaction['output']}"
-            summary = generate_summary(memories)
-        return summary
+        self.summary = generate_summary(memories, max_tokens=max_tokens)
+        return self.summary
 
 
 class Identity:
@@ -938,27 +925,38 @@ class Identity:
         self.description = generate_text(f"Describe {self.name} given the following details: {details}")
         return self.description
 
+    def generate_description_from_memories(self, max_tokens: int = 256) -> str:
+        """
+        Generate a description of the identity from the memories stored in the memory attribute.
+        :return: the description
+        """
+        self.description = generate_text(f"Write a new, detailed description of {self.name}, "
+                                         f"incorporating as many details as possible from the following information:\n "
+                                         f"old description: {self.description} \n "
+                                         f"discussions: {self.memory.generate_summary(max_tokens=max_tokens)}")
+        return self.description
+
     def save_identity(self, path: str):
-        # Save the identity to a json file
+        # Save the identity to a json file without using __dict__
         with open(path, "w") as f:
-            json.dump(self.__dict__, f)
+            f.write(json.dumps({
+                "name": self.name,
+                "description": self.description,
+                "memory": self.memory.data
+            }))
 
     def load_identity(self, path: str):
-        # Load the identity from a json file
+        # Load the identity from a json file without using __dict__
         with open(path, "r") as f:
-            self.__dict__ = json.load(f)
+            data = json.loads(f.read())
+            self.name = data["name"]
+            self.description = data["description"]
+            self.memory.data = data["memory"]
 
-    def get_response(self, context: str = "", query: str = "") -> str:
-        # Generate a response to the given text using the prompt.prompt_constructor() function
-        prompt = Prompt()
-        prompt.prompt_constructor(identity=self.description,
-                                  context=context,
-                                  query=query)
+    def get_response(self, prompt: Prompt) -> str:
         response = prompt.generate_text()
-        self.memory.add_interaction(text=query, response=response)
+        self.memory.add_interaction(prompt=prompt.query, response=response)
         return response
-
-
 
 # class Conversation:
 #     def __init__(self, *identities: GPTidentity, master_prompt: str, ai):

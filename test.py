@@ -78,22 +78,53 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 
 def main():
     """
-    test the prompt constructor in the GPTprompt class, and the GPTidentity class
-
+    test the prompt constructor in the Prompt class, and the Identity class and the Memory class
+    the end goal is to be able to generate several identities, let them interact with one another
+    and save each individual's memories to a file, then use that file to generate a context for future interactions
+    it's going ok i guess, but i keep getting stuck with the token limit in GPT. I tried summarizing the memories, with
+    ai.generate_summary() in the main generate_text function, but that led to my query getting lost in the summary
+    to fix this i should probably make a separate function that generates a summary of the memories, and then
+    appends that summary to the query, and then generates the text. I think that would work, but i'm not sure.
+    i'm going to go play some video games for a while, and then come back to this later.
     """
-    bill = ai.Identity(name="Bill")
-    bill.generate_description(details="55 years old, computer programmer, lives in Seattle, knows a lot about cars, all of his answers are object oriented programming metaphors")
+    bill = ai.Identity()
+    try:
+        bill.load_identity("bill.json")
+    except Exception as e:
+        print(f"identity not found: {e}, generating new identity")
+        bill.name = "Bill"
+        bill.generate_description(details="55 years old, computer programmer, lives in Seattle")
+
     prompt = ai.Prompt()
-    prompt.prompt_constructor(identity=bill.description,
-                              context="",
-                              format="text with stage directions",
-                              query="what is the difference between a banana and a cheese sandwich?")
-    print(prompt.prompt)
-    print(f"prompt is {ai.num_tokens(prompt.prompt)} tokens long")
-    print(f"generating text...")
-    text = prompt.generate_text()
-    print(f"text is {ai.num_tokens(text)} tokens long")
-    print(text)
+    topics = ai.generate_list("topics about hobbies", 3)
+    print(topics)
+    memory = bill.memory.data
+    for topic in topics:
+        questions = ai.generate_list(f"personal questions about {topic}to try to get to know Bill", 5)
+        print(questions)
+        for question in questions:
+            if ai.num_tokens(bill.memory.data) > 1000:
+                if bill.memory.summary is None:
+                    print(f"memory is too long for GPT, generating summary...")
+                    bill.memory.generate_summary()
+                    print(bill.memory.summary)
+                memory = bill.memory.summary
+            prompt.prompt_constructor(identity=bill.description,
+                                      context=memory,
+                                      format_example="",
+                                      query=question)
+            print(prompt.query)
+            print(f"prompt is {ai.num_tokens(prompt.prompt)} tokens long")
+            print(f"generating response...")
+            text = bill.get_response(prompt)
+            print(f"response is {ai.num_tokens(text)} tokens long")
+            print(text)
+    bill.memory.generate_summary(max_tokens=2000)
+    # print(f"summary is {ai.num_tokens(summary)} tokens long")
+    print(bill.memory.summary)
+    bill.generate_description_from_memories()
+    print(bill.description)
+    bill.save_identity("bill.json")
 
 
 if __name__ == "__main__":
