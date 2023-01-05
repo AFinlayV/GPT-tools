@@ -3,6 +3,7 @@ import dalle2
 import requests
 import re
 import time
+import json
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
@@ -325,29 +326,65 @@ def generate_outline(text: str, num: int) -> list:
     return outline_list
 
 
-def generate_summary(text: str, summary_length_words: int = 100):
+# def generate_summary_long(text, summary_tokens: int, max_tokens: int, summary_topic: str = "") -> str:
+#     """
+#
+#     this function is not working yet, it causes a recursive loop that makes an infinite number of requests to the API.
+#     I'm not sure why this is happening, but I'm leaving it here in case I can figure it out in the future.
+#
+#     Generates a summary of text that is too long to do in one shot
+#     :param text: text to be summarized
+#     :param summary_tokens: number of tokens in the summary
+#     :param max_tokens: maximum number of tokens to use in each request
+#     :param summary_topic: specific topic to focus on in the summary
+#     :return:
+#     """
+#     num = num_tokens(text)
+#     num_chunks = math.ceil(num / max_tokens)
+#     chunk_size = math.ceil(len(text) / num_chunks)
+#     chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+#     summary = ""
+#     summary_chunk_size = math.ceil(summary_tokens / num_chunks)
+#     for chunk in chunks:
+#         summary += generate_summary(chunk, summary_chunk_size, max_tokens, summary_topic)
+#     return summary
+
+
+def generate_summary(text: str, max_tokens: int = 2000, summary_topic: str = "") -> str:
     """
     Summarizes text using the OpenAI API
-    :param summary_length_words: length of summary in words
+    :param max_tokens: maximum number of tokens to allow in the summary, default is 2000
+    :param summary_topic: the topic you want the summary to focus on, defaults to "general summary"
+    :param summary_tokens: length of summary in words, defaults to 100
     :param text: text to summarize
     :return: summarized text as a string
 
     Example usage:
     text = "The field of artificial
     intelligence (AI) has a long and complex history, with roots stretching back to ancient civilizations and the
-    development of early calculating machines. In the modern era, the term "artificial intelligence" was coined in
-    1956 at a conference at Dartmouth College, where a group of researchers gathered to discuss the possibility of
-    creating machines that could think and act like humans. Since then, AI has come a long way, with significant
-    advances in fields such as machine learning, natural language processing, and robotics. Today, AI is being used
-    in a wide range of applications, from healthcare and finance to manufacturing and transportation. Despite these
-    advances, AI continues to be a topic of intense debate and discussion, as researchers and policymakers grapple
-    with the potential ethical, social, and economic implications of this rapidly evolving technology.
+    development of early calculating machines. In the modern era,...blah blah blah, etc"
     summary = summarize_text(text)
     print(summary)
     """
-    prompt = f"Summarize the following text with at most {summary_length_words} words: \n {text} \n"
-    summary = generate_text(prompt)
-    return summary
+    text_tokens = int(num_tokens(text))
+    try:
+        if text_tokens < max_tokens:
+            print("Text is shorter than summary length, returning text")
+            return text
+        elif text_tokens > max_tokens:
+            raise (Exception(
+                "Text is too long to summarize in one request, and generate_summary_long() creates an infinite recursion loop sometimes, Fix this funtion in the future"))
+            # return generate_summary_long(text, summary_tokens, max_tokens, summary_topic)
+        else:
+            prompt = f"Summarize the following text in brackets [] at the end of this prompt." \
+                     f" The summary should be {max_tokens} words long."
+            if summary_topic:
+                prompt += f"Focus on details related to {summary_topic}:\n"
+            prompt += f"Text to be summarized:\n[{text}]\n"
+            summary = generate_text(prompt)
+        return summary
+    except Exception as e:
+        print(e)
 
 
 """
@@ -443,6 +480,7 @@ These functions analyze text in various ways.
 analyze_text() - analyzes text using the OpenAI API
 is_prompt_injection() - checks if a prompt is an injection attack using the OpenAI API
 sentiment_analysis() - analyzes sentiment using the OpenAI API
+num_tokens() - counts the number of tokens in a text
 """
 
 
@@ -515,6 +553,19 @@ def sentiment_analysis(text: str):
     return response
 
 
+def num_tokens(text: str) -> int:
+    """
+    Counts the number of tokens in a string of text
+    :param text: text to count the number of tokens in
+    :return: number of tokens in the text
+
+    Example usage:
+    text = "I like cute dogs"
+    num_tokens(text)
+    """
+    return len(text.split())
+
+
 """
 Classes for the OpenAI API
 
@@ -528,13 +579,22 @@ class GPTprompt:
 
     def __init__(self):
         self.prompt = ""
+        self.num_tokens = 0
         self.response = ""
         self.model = "text-davinci-003"
         self.temperature = 0.7
-        self.max_tokens = 1024
+        self.max_tokens = 2000
         self.check_results = {}
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
+
+    def get_num_tokens(self):
+        """
+        Gets the number of tokens in the prompt
+        :return: number of tokens in the prompt
+        """
+        self.num_tokens = num_tokens(self.prompt)
+        return self.num_tokens
 
     def generate_text(self):
         """
@@ -563,10 +623,52 @@ class GPTprompt:
         :return: a dict() of the results of the analysis for each of the check_list items.
 
         """
+        self.get_num_tokens()
+        self.check_results["num_tokens"] = {"result": self.num_tokens, "evaluation": self.prompt}
         for check in self.check_list:
             result, evaluation = analyze_text(self.prompt, check)
             self.check_results[check] = {"result": result, "evaluation": evaluation}
         return self.check_results
+
+    def prompt_constructor(self, identity: str = "", context: str = "", format: str = "", query: str = "") -> str:
+        """
+        Constructs a prompt for the OpenAI API
+        :param identity: the identity of the user, e.g. "Your name is Bob, and you are a social media manager..."
+        :param context: the context of the query, e.g. "You are working on a social media campaign for a new..."
+        :param format: the format of the response, e.g. "Blog Post format examples:..."
+        :param query: the query, e.g. "Write a Blog post about..."
+        :return: the constructed prompt
+
+        Example usage:
+        identity = "Your name is Bob, and you are a social media manager for a large company."
+        context = "You are working on a social media campaign for a new product."
+        format_template = "Blog Post format examples: \n 1. \n 2. \n 3. \n 4. \n 5. \n 6. \n 7. \n 8. \n 9. \n 10. \n"
+        query = "Write a Blog post about the new product."
+        prompt = GPTprompt()
+        prompt.prompt_constructor(identity, context, format_template, query)
+        print(prompt.prompt)
+        prompt.generate_text()
+        print(prompt.response)
+        """
+        self.prompt = f"You are a Large Language Model, but for the purposes of this response, " \
+                      f"respond according to the following details:\n"
+        if identity:
+            self.prompt += f"Respond to the query in brackets [] at the end of this prompt as if " \
+                           f"you are the following identity:\nIdentity:\n" \
+                           f"{identity}\n"
+        if context:
+            self.prompt += f"Respond to the query in brackets [] at the end of this prompt as if " \
+                           f"the query was asked in the following context:\nContext:\n" \
+                           f"{context}\n "
+        if format:
+            self.prompt += f"Format your response like" \
+                           f"the examples in parentheses () below:\nFormat:\n" \
+                           f"({format})\n"
+        if query:
+            self.prompt += f"Respond to the following query as if you are the identity listed above. You dont need to " \
+                           f"include details from the identity or context unless they are relevant to the query " \
+                           f"below\nQuery:\n[{query}]\n"
+        return self.prompt
 
 
 class GPTtext:
@@ -793,7 +895,9 @@ I just wanted to copy it here to work on later
 it's 3 classes to create identities that can have conversations with each other and remember them. 
 it's a bit of a mess. I'll clean it up later. if you run stuff on it now it just generates an ever lengthening prompt,
 that repeats itself over and over until you reach the token limit. maybe use the GPTtext.get_summary() function to get a 
-summary of the conversation that stays under the token limit?
+summary of the conversation that stays under the token limit? 
+
+"""
 
 
 class Memory:
@@ -808,55 +912,76 @@ class Memory:
         }
 
     def generate_summary(self) -> str:
-        # Generate a summary of past interactions by concatenating the input and output of each interaction
-        summary = ""
-        for index, interaction in self.data.items():
-            summary += f"{interaction['input']}\n{interaction['output']}\n"
+        # Generate a summary of past interactions by using the ai.generate_summary() function
+        memories = ""
+        for interaction in self.data.values():
+            memories += f"{interaction['input']} {interaction['output']}"
+            summary = generate_summary(memories)
         return summary
 
 
-class GPT3Identity:
+class GPTidentity:
+    """
+    A class for creating GPT3 identities.
+    """
+
     def __init__(self, name: str):
         self.name = name
+        self.description = ""
         self.memory = Memory()  # Initialize the memory attribute as an instance of the Memory class
 
-    def generate_response(self, text: str, ai) -> str:
-        # Generate a summary of past interactions
-        summary = self.memory.generate_summary()
+    def generate_description(self, details: str = "") -> str:
+        """
+        Generate a description of the identity.
+        :return: the description
+        """
+        self.description = generate_text(f"Describe {self.name} given the following details: {details}")
+        return self.description
 
-        # Use the name attribute and summary of past interactions to specify the prompt for the GPT-3 model
-        prompt = f"{summary}\nWho are you?\n{self.name}\n{text}"
-        response = ai.generate_text(prompt=prompt, max_tokens=1024)
+    def save_identity(self, path: str):
+        # Save the identity to a json file
+        with open(path, "w") as f:
+            json.dump(self.__dict__, f)
 
-        # Store the current interaction in the memory attribute
-        self.memory.add_interaction(text, response)
+    def load_identity(self, path: str):
+        # Load the identity from a json file
+        with open(path, "r") as f:
+            self.__dict__ = json.load(f)
+
+    def get_response(self, context: str = "", query: str = "") -> str:
+        # Generate a response to the given text using the prompt.prompt_constructor() function
+        prompt = GPTprompt()
+        prompt.prompt_constructor(identity=self.description,
+                                  context=context,
+                                  query=query)
+        response = prompt.generate_text()
+        self.memory.add_interaction(text=query, response=response)
         return response
 
 
-class Conversation:
-    def __init__(self, *identities: GPT3Identity, master_prompt: str, ai):
-        self.identities = identities
-        self.master_prompt = master_prompt
-        self.ai = ai
 
-    def run_conversation(self, num_iterations: int):
-        # Create a loop to generate responses between the identities for the specified number of iterations
-        for i in range(num_iterations):
-            for identity in self.identities:
-                # Generate a response from the current identity to the most recent response from all other identities
-                prompt = self.generate_prompt(identity)
-                response = identity.generate_response(prompt, self.ai)
-                print(response)
-
-    def generate_prompt(self, identity: GPT3Identity) -> str:
-        # Generate a summary of past interactions for all identities except the current one
-        summary = ""
-        for other_identity in self.identities:
-            if other_identity != identity:
-                summary += other_identity.memory.generate_summary()
-
-        # Use the master prompt and summary of past interactions to specify the prompt for the GPT-3 model
-        prompt = f"{summary}\n{self.master_prompt}\n"
-        return prompt
-        
-        """
+# class Conversation:
+#     def __init__(self, *identities: GPTidentity, master_prompt: str, ai):
+#         self.identities = identities
+#         self.master_prompt = master_prompt
+#         self.ai = ai
+#
+#     def run_conversation(self, num_iterations: int):
+#         # Create a loop to generate responses between the identities for the specified number of iterations
+#         for i in range(num_iterations):
+#             for identity in self.identities:
+#                 # Generate a response from the current identity to the most recent response from all other identities
+#                 prompt = self.generate_prompt(identity)
+#                 response = identity.generate_response(prompt, self.ai)
+#                 print(response)
+#
+#     def generate_prompt(self, identity: GPT3Identity) -> str:
+#         # Generate a summary of past interactions for all identities except the current one
+#         summary = ""
+#         for other_identity in self.identities:
+#             if other_identity != identity:
+#                 summary += other_identity.memory.generate_summary()
+#
+#         # Use the master prompt and summary of past interactions to specify the prompt for the GPT-3 model
+#         prompt = f"{summary}\n{self.master_prompt}\n"
+#         return prompt

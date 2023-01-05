@@ -43,11 +43,57 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 #          story.refined_text = ai.refine_text(story.refined_text, critique)
 #          print(f"\nCritique: \n\n {critique} \n New Draft of Story:\n\n {story.refined_text}")
 
+# def summary_test():
+#     prompt = ai.GPTprompt()
+#     try:
+#         text = ai.load_text("essay.txt")
+#     except Exception as e:
+#         text = ""
+#         print(f"text not found: {e}, generating new text")
+#         prompt.prompt = f"write a 3000 word essay about the history of the computers. " \
+#                         f"make it as close to 3000 words as possible, even if that means repeating some information"
+#         text += prompt.generate_text()
+#         print(text)
+#
+#         prompt.prompt = f"write a 3000 word essay about the history of the internet. " \
+#                         f"make it as close to 3000 words as possible, even if that means repeating some information"
+#         text += prompt.generate_text()
+#         print(text)
+#         ai.save_text(text, "essay.txt")
+#     # prompt.prompt = "write a 3000 word essay about the history of the AI"
+#     # text += prompt.generate_text()
+#     # print(text)
+#     # prompt.prompt = "write a 3000 word essay about the history of the western civilization"
+#     # text += prompt.generate_text()
+#     # print(text)
+#     print(f"text is {ai.num_tokens(text)} tokens long\n")
+#     print(text)
+#     print(f"summarizing text...")
+#     summary = ai.generate_summary(text,
+#                                   summary_tokens=100,
+#                                   max_tokens=2000,
+#                                   summary_topic="the specific dates mentioned in the essay")
+#     print(f"summary is {ai.num_tokens(summary)} tokens")
+#     print(summary)
 
 def main():
-    # this_thing()
-    # that_thing()
-    pass
+    """
+    test the prompt constructor in the GPTprompt class, and the GPTidentity class
+
+    """
+    bill = ai.GPTidentity(name="Bill")
+    bill.generate_description(details="55 years old, computer programmer, lives in Seattle, knows a lot about cars, all of his answers are object oriented programming metaphors")
+    prompt = ai.GPTprompt()
+    prompt.prompt_constructor(identity=bill.description,
+                              context="",
+                              format="text with stage directions",
+                              query="what is the difference between a banana and a cheese sandwich?")
+    print(prompt.prompt)
+    print(f"prompt is {ai.num_tokens(prompt.prompt)} tokens long")
+    print(f"generating text...")
+    text = prompt.generate_text()
+    print(f"text is {ai.num_tokens(text)} tokens long")
+    print(text)
 
 
 if __name__ == "__main__":
