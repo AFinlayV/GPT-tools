@@ -214,21 +214,6 @@ def generate_image_prompt(text: str, style: str) -> str:
     return full_prompt
 
 
-def generate_list(text: str, n: int = 5) -> list:
-    """
-    Generates a list using the OpenAI API
-    :param text: text to use in constructing the prompt
-    :param n: number of items in the list
-    :return: generated list as a list
-
-    Example usage:
-    prompt = "things that are blue"
-    list = generate_list(prompt, 5)
-    print(list)
-    """
-
-
-
 def generate_summary(data: str, max_words: int = 1000, summary_topic: str = "") -> str:
     """
     Summarizes text using the OpenAI API
@@ -339,21 +324,21 @@ def restyle_text(text: str, style: str):
     return restyled_text
 
 
-def sort_list(unsorted_list: list, sort_by: str) -> list:
-    """
-    Sorts a list using the OpenAI API
-    :param unsorted_list: list to sort
-    :param sort_by: how to sort the list
-    :return: sorted list as a list
-
-    Example usage:
-    list = ["apple", "banana", "orange"]
-    sorted_list = sort_list(list, "alphabetical order")
-    print(sorted_list)
-    """
-    prompt = f"Sort the following list in the following by {sort_by}: \n {unsorted_list} \n "
-    sorted_list = generate_list(prompt, len(unsorted_list))
-    return sorted_list
+# def sort_list(unsorted_list: list, sort_by: str) -> list:
+#     """
+#     Sorts a list using the OpenAI API
+#     :param unsorted_list: list to sort
+#     :param sort_by: how to sort the list
+#     :return: sorted list as a list
+#
+#     Example usage:
+#     list = ["apple", "banana", "orange"]
+#     sorted_list = sort_list(list, "alphabetical order")
+#     print(sorted_list)
+#     """
+#     prompt = f"Sort the following list in the following by {sort_by}: \n {unsorted_list} \n "
+#     sorted_list = generate_list(prompt, len(unsorted_list))
+#     return sorted_list
 
 
 """
@@ -700,7 +685,7 @@ class Text:
                       critique_by: str = "make the writing more engaging and human, with proper grammar and spelling",
                       num: int = 5, ) -> list:
         """
-        Generates a critique of the text stored in self.original_text.
+        Generates a critique of the text stored in self.text.
         :param critique_by: criteria to critique by. This can be "grammar", "style", "meaning", "logic", "relevance"
         :param num: number of critiques to generate
         :return: a list of critiques
