@@ -26,10 +26,10 @@ Memory: a class for storing and retrieving memories of Identities using the Open
 Conversation: a class for generating a conversation between two Identities using the OpenAI API
 
 TODO:
-1. generalize the text generation functions and do any specific stuff in the Prompt class
-2. work on the Identity, Memory, and Conversation classes
-3. maybe make the whole thing class based, and abandon the functions entirely?
-
+- work on the Identity, Memory, and Conversation classes
+- fix the sort list function. maybe make a class for lists?
+- fix is_prompt_injection
+- put generate_image_prompt in the Prompt class
 
 """
 
@@ -120,7 +120,6 @@ A set of functions that use the OpenAI API to generate text, images, and stories
 generate_text() - generates text using the OpenAI API
 generate_image_from_text() - generates an image from text using the OpenAI API
 generate_image_prompt() - generates a prompt for generating an image from text using the OpenAI API
-generate_list() - generates a list using the OpenAI API
 generate_summary() - generates a summary using the OpenAI API
 """
 
@@ -265,7 +264,7 @@ refine_text() - refines text using the OpenAI API
 summarize_text() - summarizes text using the OpenAI API
 elaborate_text() - elaborates text using the OpenAI API
 restyle_text() - restyles text using the OpenAI API
-sort_list() - sorts a list using the OpenAI API
+sort_list() - sorts a list using the OpenAI API - currently broken
 """
 
 
