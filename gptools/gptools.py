@@ -20,6 +20,10 @@ Functions:
 Classes:
 Prompt: a class for generating text using the OpenAI API
 Text: a class for manipulating and analysing text using the OpenAI API
+Story: a class for generating a story using the OpenAI API
+Identity: a class for generating an identity using the OpenAI API
+Memory: a class for storing and retrieving memories of Identities using the OpenAI API
+Conversation: a class for generating a conversation between two Identities using the OpenAI API
 
 TODO:
 1. generalize the text generation functions and do any specific stuff in the Prompt class
