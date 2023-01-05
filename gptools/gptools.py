@@ -18,8 +18,13 @@ Functions:
 4. Text analysis functions
 
 Classes:
-GPTprompt: a class for generating text using the OpenAI API
-GPTtext: a class for manipulating and analysing text using the OpenAI API
+Prompt: a class for generating text using the OpenAI API
+Text: a class for manipulating and analysing text using the OpenAI API
+
+TODO:
+1. generalize the text generation functions and do any specific stuff in the Prompt class
+2. work on the Identity, Memory, and Conversation classes
+3. maybe make the whole thing class based, and abandon the functions entirely?
 
 
 """
