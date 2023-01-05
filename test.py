@@ -81,9 +81,9 @@ def main():
     test the prompt constructor in the GPTprompt class, and the GPTidentity class
 
     """
-    bill = ai.GPTidentity(name="Bill")
+    bill = ai.Identity(name="Bill")
     bill.generate_description(details="55 years old, computer programmer, lives in Seattle, knows a lot about cars, all of his answers are object oriented programming metaphors")
-    prompt = ai.GPTprompt()
+    prompt = ai.Prompt()
     prompt.prompt_constructor(identity=bill.description,
                               context="",
                               format="text with stage directions",

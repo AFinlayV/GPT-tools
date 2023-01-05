@@ -572,7 +572,7 @@ Classes for the OpenAI API
 """
 
 
-class GPTprompt:
+class Prompt:
     """
     A prompt for the OpenAI API.
     """
@@ -671,7 +671,7 @@ class GPTprompt:
         return self.prompt
 
 
-class GPTtext:
+class Text:
     """
     text for editing, revision and analysis.
     """
@@ -834,7 +834,7 @@ class GPTtext:
         self.text = load_text(path)
 
 
-class Story(GPTtext):
+class Story(Text):
     """
     A class for generating stories.
     Story inherits from GPTtext.
@@ -842,7 +842,7 @@ class Story(GPTtext):
 
     def __init__(self, ):
         super().__init__()
-        self.story_prompt = GPTprompt()
+        self.story_prompt = Prompt()
         self.refined_story = ""
         self.genre = ""
         self.plot = ""
@@ -851,7 +851,7 @@ class Story(GPTtext):
         self.themes = []
         self.story_outline = {}
 
-    def get_story_prompt(self) -> GPTprompt:
+    def get_story_prompt(self) -> Prompt:
         """
         generate a prompt object to use to generate an original story.
         :return: GPTprompt object with a fully formed prompt to generate a story
@@ -875,7 +875,7 @@ class Story(GPTtext):
             prompt += f"Story Outline:"
             for key, value in self.story_outline:
                 prompt += f"{key}: {value}\n"
-        story_prompt = GPTprompt()  # create a new prompt object
+        story_prompt = Prompt()  # create a new prompt object
         story_prompt.prompt = prompt  # set the prompt to the generated prompt
         self.story_prompt = story_prompt  # set the story prompt to the generated prompt
         return story_prompt
@@ -920,7 +920,7 @@ class Memory:
         return summary
 
 
-class GPTidentity:
+class Identity:
     """
     A class for creating GPT3 identities.
     """
@@ -950,7 +950,7 @@ class GPTidentity:
 
     def get_response(self, context: str = "", query: str = "") -> str:
         # Generate a response to the given text using the prompt.prompt_constructor() function
-        prompt = GPTprompt()
+        prompt = Prompt()
         prompt.prompt_constructor(identity=self.description,
                                   context=context,
                                   query=query)
