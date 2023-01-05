@@ -137,7 +137,9 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     print(text)
     """
     if len(prompt) > 2048:
+        print("The prompt is too long. generating test from a summary of the prompt.")
         prompt = generate_summary(prompt)
+        # maybe i should do this in the Prompt class? idk if it's a good idea to do it here
     try:
         response = openai.Completion.create(engine=model,
                                             prompt=prompt,
