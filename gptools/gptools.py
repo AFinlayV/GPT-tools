@@ -120,14 +120,7 @@ A set of functions that use the OpenAI API to generate text, images, and stories
 generate_text() - generates text using the OpenAI API
 generate_image_from_text() - generates an image from text using the OpenAI API
 generate_image_prompt() - generates a prompt for generating an image from text using the OpenAI API
-generate_story() - generates a story using the OpenAI API
-generate_screenplay() - generates a screenplay using the OpenAI API
-generate_title() - generates a title using the OpenAI API
 generate_list() - generates a list using the OpenAI API
-generate_reply() - generates a reply using the OpenAI API
-generate_questions() - generates questions using the OpenAI API
-generate_outline() - generates an outline using the OpenAI API
-generate_critiques() - generates critiques using the OpenAI API
 generate_summary() - generates a summary using the OpenAI API
 """
 
@@ -145,10 +138,10 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     text = generate_text(prompt)
     print(text)
     """
-    if len(prompt) > 2048:
-        print("The prompt is too long. generating test from a summary of the prompt.")
-        prompt = generate_summary(prompt)
-        # maybe i should do this in the Prompt class? idk if it's a good idea to do it here
+    if len(prompt.split()) > 2048:
+        print("The prompt is too long. generating text the last 2048 words.")
+        prompt = " ".join(prompt.split()[2048:])
+
     try:
         response = openai.Completion.create(engine=model,
                                             prompt=prompt,
@@ -221,25 +214,6 @@ def generate_image_prompt(text: str, style: str) -> str:
     return full_prompt
 
 
-def generate_title(text: str, title_type: str) -> str:
-    """
-    Generates a title using the OpenAI API
-    :param text: text to use as a prompt
-    :param title_type: type of title to generate
-    :return: generated title as a string
-
-    Example usage:
-    text = "A dialogue between two characters discussing the history of Artificial Intelligence"
-    title_type = "movie"
-    title = generate_title(text, title_type)
-    print(title)
-    """
-    prompt = f"[{text}]\n Generate a title for the text between brackets above, " \
-             f"assuming that the text is the following style of writing:'{title_type}'.\n"
-    title = generate_text(prompt)
-    return title
-
-
 def generate_list(text: str, n: int = 5) -> list:
     """
     Generates a list using the OpenAI API
@@ -252,97 +226,13 @@ def generate_list(text: str, n: int = 5) -> list:
     list = generate_list(prompt, 5)
     print(list)
     """
-    prompt = f"Generate a numbered list of {n} items for the following prompt: \n {text}" \
-             f"this list should be in the following format: \n 1. \n 2. \n 3. \n 4. \n 5. \n etc."
-    response = generate_text(prompt)
-    response_list = re.findall(r"\d\.\s(.*)", response)  # regex to extract list items from response text
-    response_list = [x for x in response_list if x]  # remove empty strings
-    return response_list
 
 
-def generate_reply(message: str, context: str, style: str) -> str:
-    """
-    Generates a reply using the OpenAI API
-    :param message: message to reply to
-    :param context: the context of the message
-    :param style: the style of the reply
-    :return: generated reply as a string
 
-    Example usage:
-    message = "I'm interested in buying a new car"
-    context = "A customer email to a car dealership"
-    style = "Email reply, business, casual"
-    reply = generate_reply(message, context, style)
-    print(reply)
-    """
-    prompt = f"reply to the following message (respond only to the text within the brackets): \n[ {message} ] \n " \
-             f"the message was sent in the following context: \n {context} \n " \
-             f"the reply should be written in the following style: \n {style} \n"
-    response = generate_text(prompt)
-    return response
-
-
-def generate_questions(text: str, num: int) -> list:
-    """
-    Generates questions using the OpenAI API
-    :param text: text to generate questions from
-    :param num: number of questions to generate
-    :return: a list of questions
-
-    Example usage:
-    text = "The quick brown fox jumps over the lazy dog"
-    num = 5
-    questions = generate_questions(text, num)
-    print(questions)
-    """
-    prompt = f"[{text}] \n make a list of {num} questions that could be asked about the text in brackets above \n"
-    questions_list = generate_list(prompt, num)
-    return questions_list
-
-
-def generate_critiques(text: str, num: int, critique_by: str) -> list:
-    """
-    Generates a critique using the OpenAI API
-    :param text: text to be critiqued
-    :param num: number of critiques to generate
-    :param critique_by: criteria to critique by
-    :return: a list of critiques
-
-    Example usage:
-    text = "The quick brown fox jumps over the lazy dog"
-    num = 5
-    critique_by = "grammar"
-    critiques = generate_critiques(text, num, critique_by)
-    print(critiques)
-    """
-    prompt = f"[{text}] \n make a list of {num} ways to improve the text in brackets above, " \
-             f"in the following way: {critique_by}\n"
-    critique_list = generate_list(prompt, num)
-    return critique_list
-
-
-def generate_outline(text: str, num: int) -> list:
-    """
-    Generates an outline using the OpenAI API
-    :param text: text to be outlined
-    :param num: number of points to generate
-    :return: a list of points
-
-    Example usage:
-    text = "The quick brown fox jumps over the lazy dog"
-    num = 5
-    outline = generate_outline(text, num)
-    print(outline)
-    """
-    prompt = f"[{text}] \n make a list of {num} points that summarize the text in brackets above \n"
-    outline_list = generate_list(prompt, num)
-    return outline_list
-
-
-def generate_summary(data: str, max_tokens: int = 1000, summary_topic: str = "") -> str:
+def generate_summary(data: str, max_words: int = 1000, summary_topic: str = "") -> str:
     """
     Summarizes text using the OpenAI API
-    :param max_tokens: maximum number of tokens to allow in the summary, default is 2000
+    :param max_words: maximum number of tokens to allow in the summary, default is 2000
     :param summary_topic: the topic you want the summary to focus on, defaults to "general summary"
     :param data: data to summarize
     :return: summarized text as a string
@@ -355,11 +245,11 @@ def generate_summary(data: str, max_tokens: int = 1000, summary_topic: str = "")
         text = json.dumps(data)
     text_tokens = int(num_tokens(text))
     summaries = []
-    if text_tokens > max_tokens:
+    if text_tokens > max_words:
         # Split the text into chunks of `max_tokens` size
         chunks = []
-        for i in range(0, len(text), max_tokens):
-            chunk = text[i:i + max_tokens]
+        for i in range(0, len(text), max_words):
+            chunk = text[i:i + max_words]
             chunks.append(chunk)
         for chunk in chunks:
             # Generate summary for each chunk
@@ -573,6 +463,9 @@ class Prompt:
     """
 
     def __init__(self):
+        self.format_example = None
+        self.context = None
+        self.identity = None
         self.prompt = ""
         self.num_tokens = 0
         self.response = ""
@@ -599,12 +492,19 @@ class Prompt:
         self.response = generate_text(self.prompt, self.model, self.temperature, self.max_tokens)
         return self.response
 
-    def generate_list(self, num: int) -> list:
+    def generate_list(self, num: int = 5) -> list:
         """
-        Generate a list from the prompt.
+        Generate a list from the query stored in .
         """
-        self.response = generate_list(self.prompt, num)
-        return self.response
+
+        self.prompt_constructor(format_example="1.\n2.\n3. \n4. \n5.\n6.\n7.\n8.\n9.\n10.\n",
+                                context=f"generate a list of items specified by the query below, "
+                                        f"the list should contain exactly {num} items",
+                                query=self.query)
+        response = self.generate_text()
+        response_list = re.findall(r"\d\.\s(.*)", response)  # regex to extract list items from response text
+        response_list = [x for x in response_list if x]  # remove empty list items
+        return response_list
 
     def generate_image(self, style, path):
         """
@@ -626,7 +526,7 @@ class Prompt:
             self.check_results[check] = {"result": result, "evaluation": evaluation}
         return self.check_results
 
-    def prompt_constructor(self, identity: str = "", context="", format_example: str = "", query: str = "") -> str:
+    def prompt_constructor(self, identity=None, context=None, format_example=None, query=None) -> str:
         """
         Constructs a prompt for the OpenAI API
         :param identity: the identity of the user, e.g. "Your name is Bob, and you are a social media manager..."
@@ -646,25 +546,34 @@ class Prompt:
         prompt.generate_text()
         print(prompt.response)
         """
-        self.query = query
-        self.prompt = f"You are a Large Language Model, but for the purposes of this response, " \
-                      f"respond according to the following details:\n"
+        if query is not None:
+            self.query = query
+        if identity is not None:
+            self.identity = identity
+        if context is not None:
+            self.context = context
+        if format_example is not None:
+            self.format_example = format_example
+        self.prompt = f"For the purposes of this response, " \
+                      f"respond according to the following details, you will only be responding to the query at the end" \
+                      f"of the prompt, the following is context information:\n"
         if identity:
-            self.prompt += f"Respond to the query in brackets [] at the end of this prompt as if " \
+            self.prompt += f"Respond to the query at the end of this prompt as if " \
                            f"you are the following identity:\nIdentity:\n" \
-                           f"{identity}\n"
+                           f"{self.identity}\n"
         if context:
-            self.prompt += f"Respond to the query in brackets [] at the end of this prompt as if " \
+            self.prompt += f"Respond to the query at the end of this prompt as if " \
                            f"the query was asked in the following context:\nContext:\n" \
-                           f"{context}\n "
+                           f"{self.context}\n "
         if format_example:
-            self.prompt += f"Format your response like" \
-                           f"the examples in parentheses () below:\nFormat:\n" \
-                           f"({format_example})\n"
+            self.prompt += f"Format your response like the example(s) below. " \
+                           f"Do not copy the text from the format example, but only use the format as an example:" \
+                           f"\nFormat:\n" \
+                           f"{self.format_example}\n"
         if query:
             self.prompt += f"Respond to the following query as if you are the identity listed above. You dont need to " \
                            f"include details from the identity or context unless they are relevant to the query " \
-                           f"below\nQuery:\n[{self.query}]\n"
+                           f"below\nQuery:\n{self.query}\n"
         return self.prompt
 
 
@@ -674,21 +583,28 @@ class Text:
     """
 
     def __init__(self):
+        self.text = ""
+        self.prompt = Prompt()
         self.restyled_text = ""
         self.questions = []
-        self.outline = []
+        self.outline = {}
         self.analysis = {}
         self.elaboration = ""
         self.summary = ""
         self.results = {}
-        self.title_type = "normal text"
+        self.text_type = ""
         self.title = ""
-        self.text = ""
         self.critiques = []
         self.refined_text = ""
         self.check_results = {}
         self.sentiment = ""
         self.meta = {}
+
+    def __str__(self):
+        if self.title:
+            return f"{self.title}\n{self.text}"
+        else:
+            return self.text
 
     def get_meta(self) -> dict:
         """
@@ -712,29 +628,51 @@ class Text:
         Generate a title for the text. This is a wrapper for generate_title().
         :return: the title
         """
-
-        self.title = generate_title(self.text, self.title_type)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Write a title for the following  text:{self.text}")
+        if self.text_type:
+            prompt.prompt_constructor(context=f"Assuming that the text is a {self.text_type},")
+        self.title = prompt.generate_text()
         return self.title
 
-    def get_summary(self, num: int = 5) -> str:
+    def get_summary(self, num: int = None) -> str:
         """
         Summarize the text in self.original_text.
         :param num: number of words to summarize to
         :return: the summarized text
 
         """
-
-        self.summary = generate_summary(self.text, num)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Summarize the following text:{self.text}")
+        if self.text_type:
+            prompt.prompt_constructor(context=f"Assuming that the text is a {self.text_type},")
         return self.summary
 
-    def get_outline(self, num: int = 5) -> list:
+    def get_outline(self, num: int = None) -> list:
         """
         Outlines the text stored in self.original_text.
         :param num: number of points in the outline
         :return: the outline
         """
 
-        self.outline = generate_outline(self.text, num)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Outline the following text:{self.text}",
+                                  format_example='{\n  "1": {\n    "Introduction": {\n      "Purpose": "The purpose '
+                                                 'of this outline is to describe the structure and content of a '
+                                                 'document.",\n      "Scope": "This outline applies to the document '
+                                                 'and any related materials."\n    },\n    "Overview": "This section '
+                                                 'provides a high-level overview of the document."\n  },\n  "2": {\n  '
+                                                 '  "Detailed Description": {\n      "Section 1": "This section '
+                                                 'describes the first part of the document in more detail.",'
+                                                 '\n      "Section 2": "This section describes the second part of the '
+                                                 'document in more detail."\n    },\n    "Conclusion": "This section '
+                                                 'summarizes the main points of the document and provides final '
+                                                 'thoughts."\n  }\n}')
+        if num is not None:
+            prompt.prompt_constructor(context=f"Use {num} main points in your outline.")
+        if self.text_type:
+            prompt.context.append(f"Assuming that the text is a {self.text_type},")
+        self.outline = json.loads(prompt.generate_text())
         return self.outline
 
     def get_questions(self, num: int = 5) -> list:
@@ -743,7 +681,9 @@ class Text:
         :param num: number of questions to generate
         :return: the questions
         """
-        self.questions = generate_questions(self.text, num)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Generate questions about the following text:{self.text}")
+        self.questions = prompt.generate_list(num)
         return self.questions
 
     def get_elaboration(self) -> str:
@@ -751,7 +691,9 @@ class Text:
         Elaborates on the text stored in self.original_text.
         :return: the elaboration as a string
         """
-        self.elaboration = elaborate_text(self.text)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Elaborate on the following text:{self.text}")
+        self.elaboration = prompt.generate_text()
         return self.elaboration
 
     def get_critiques(self,
@@ -763,8 +705,11 @@ class Text:
         :param num: number of critiques to generate
         :return: a list of critiques
         """
-
-        self.critiques = generate_critiques(self.text, num, critique_by)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Generate critiques of the following text: {self.text}",
+                                  context=f"Use the following criteria to critique the text: {critique_by}\n "
+                                          f"produce a list of exactly {num} critiques.")
+        self.critiques = prompt.generate_list(num)
         return self.critiques
 
     def get_sentiment(self) -> str:
@@ -774,18 +719,6 @@ class Text:
         """
         self.sentiment = sentiment_analysis(self.text)
         return self.sentiment
-
-    # def refine(self, refine_by: str):
-    #     """
-    #     Refine text stored in self.original_text by changing according to criteria defined by refine_by.
-    #     :param refine_by: criteria to refine by. This can be "grammar", "style", "meaning", "logic", "relevance"
-    #             or it can be a critique generated by generate_critiques()
-    #     :return: refined text
-    #     """
-    #     data = GPTtext()
-    #     data.text = refine_text(self.text, refine_by)
-    #     self.refined_text = data
-    #     return self.refined_text
 
     def analyze(self, analyze_by: str):
         """
@@ -885,17 +818,6 @@ class Story(Text):
         self.text = self.story_prompt.generate_text()
         return self.text
 
-    """
-the following is written by gptchat. it needs some work to integrate it with this library, 
-I just wanted to copy it here to work on later
-
-it's 3 classes to create identities that can have conversations with each other and remember them. 
-it's a bit of a mess. I'll clean it up later. if you run stuff on it now it just generates an ever lengthening prompt,
-that repeats itself over and over until you reach the token limit. maybe use the GPTtext.get_summary() function to get a 
-summary of the conversation that stays under the token limit? 
-
-"""
-
 
 class Memory:
     def __init__(self):
@@ -914,7 +836,7 @@ class Memory:
         memories = ""
         for interaction in self.data.values():
             memories += f"{interaction['input']} {interaction['output']}"
-        self.summary = generate_summary(memories, max_tokens=max_tokens)
+        self.summary = generate_summary(memories, max_words=max_tokens)
         return self.summary
 
 
@@ -927,6 +849,9 @@ class Identity:
         self.name = ""
         self.description = ""
         self.memory = Memory()  # Initialize the memory attribute as an instance of the Memory class
+
+    def __str__(self):
+        return f"{self.name} - {self.description}"
 
     def generate_description(self, details: str = "") -> str:
         """
