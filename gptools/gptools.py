@@ -325,7 +325,7 @@ def restyle_text(text: str, style: str):
 
 
 # def sort_list(unsorted_list: list, sort_by: str) -> list:
-#     """
+#     """ This function is broken since i changed genrate_list() to a method of Text()
 #     Sorts a list using the OpenAI API
 #     :param unsorted_list: list to sort
 #     :param sort_by: how to sort the list
