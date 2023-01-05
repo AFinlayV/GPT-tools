@@ -840,7 +840,7 @@ class Story(Text):
     Story inherits from GPTtext.
     """
 
-    def __init__(self, ):
+    def __init__(self):
         super().__init__()
         self.story_prompt = Prompt()
         self.refined_story = ""
@@ -925,8 +925,8 @@ class Identity:
     A class for creating GPT3 identities.
     """
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self):
+        self.name = ""
         self.description = ""
         self.memory = Memory()  # Initialize the memory attribute as an instance of the Memory class
 
