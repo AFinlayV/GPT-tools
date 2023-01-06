@@ -4,6 +4,7 @@ import requests
 import re
 import time
 import json
+import numpy as np
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
@@ -29,7 +30,7 @@ TODO:
 - work on the Identity, Memory, and Conversation classes
 - fix the sort list function. maybe make a class for lists?
 - fix is_prompt_injection
-- put generate_image_prompt in the Prompt class
+- fix error handling in generate_text
 
 """
 
@@ -137,9 +138,6 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     text = generate_text(prompt)
     print(text)
     """
-    if len(prompt.split()) > 2048:
-        print("The prompt is too long. generating text the last 2048 words.")
-        prompt = " ".join(prompt.split()[2048:])
 
     try:
         response = openai.Completion.create(engine=model,
@@ -150,13 +148,10 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
         return response["choices"][0]["text"]
     except Exception as e:
         print(f"Error generating text:\n Prompt:\n {prompt}\n Model: {model}\nError:\n{e}\n")
-        if input("Try again? (y/n)") == "y" or "Y":
-            generate_text(prompt)
-        else:
-            return "Error generating text"
+        return ""
 
 
-def generate_image_from_text(prompt: str, style: str, filename: str):
+def generate_image(prompt: str, filename: str):
     """
     Generates an image from text using the OpenAI API
     :param prompt: text to use as a prompt
@@ -171,11 +166,10 @@ def generate_image_from_text(prompt: str, style: str, filename: str):
     generate_image_from_text(prompt, style, filename)
     """
     try:
-        full_prompt = f"{prompt} {style}"
-        if len(full_prompt) > 400:
+        if len(prompt) > 400:
             prompt = prompt[:400]
         response = openai.Image.create(
-            prompt=full_prompt,
+            prompt=prompt,
             n=1,
             size="1024x1024"
         )
@@ -184,33 +178,11 @@ def generate_image_from_text(prompt: str, style: str, filename: str):
         open(filename, 'wb').write(r.content)
         print(f"Image saved: {filename}")
     except Exception as e:
-        print(f"Image generation failed:\n Prompt: \n{prompt} \n Style: \n{style}\n Error Message: \n{e}\n")
+        print(f"Image generation failed:\n Prompt: \n{prompt} Error Message: \n{e}\n")
         if input("Try again? (y/n)") == "y" or "Y":
-            generate_image_from_text(prompt, style, filename)
+            generate_image(prompt, filename)
         else:
             return "Image generation failed"
-
-
-def generate_image_prompt(text: str, style: str) -> str:
-    """
-    Generates a prompt for generating an image from text using the OpenAI API
-    :param text: text to use as a prompt
-    :param style: style to use
-    :return: prompt as a string
-
-    Example usage:
-    text = "generate an image of a cat"
-    style = "photo-realistic"
-    prompt = generate_image_prompt(text, style)
-    print(prompt)
-    """
-    prompt = f"Given the text in brackets below: \n[{text}] \n\n Generate a prompt for DallE2 to generate an image. " \
-             f"The language in the prompt should be short, visually descriptive phrases, and separated by commas."
-    image_prompt = generate_text(prompt)
-    image_style = generate_text(f"Given the style in brackets below: \n[{style}] \n\n Generate a series of visual "
-                                f"descriptions of the style separated by commas. ")
-    full_prompt = f"{image_prompt}. {image_style}"
-    return full_prompt
 
 
 def generate_summary(data: str, max_words: int = 1000, summary_topic: str = "") -> str:
@@ -264,6 +236,7 @@ refine_text() - refines text using the OpenAI API
 summarize_text() - summarizes text using the OpenAI API
 elaborate_text() - elaborates text using the OpenAI API
 restyle_text() - restyles text using the OpenAI API
+embed_text() - converts text to an embedding using the OpenAI API
 sort_list() - sorts a list using the OpenAI API - currently broken
 """
 
@@ -321,6 +294,27 @@ def restyle_text(text: str, style: str):
              f"in the following style: \n {style} \n"
     restyled_text = generate_text(prompt)
     return restyled_text
+
+
+def embed_text(text):
+    """
+    Obtain the embedding vectors for a list of words.
+
+    Parameters:
+    - words (list): A list of words to obtain embeddings for.
+
+    Returns:
+    - embeddings (numpy array): A numpy array containing the embedding vectors for the input words.
+    """
+
+    # Obtain the embedding vectors for the input words
+    gpt3_embeddings = openai.Embedding.create(
+        model="text-embedding-ada-002",
+        input="text"
+    )
+    print(type(gpt3_embeddings))
+    print(gpt3_embeddings)
+    return gpt3_embeddings["data"][0]["embedding"]
 
 
 # def sort_list(unsorted_list: list, sort_by: str) -> list:
@@ -431,8 +425,12 @@ def num_tokens(data) -> int:
     text = "I like cute dogs"
     num_tokens(text)
     """
-    text = json.dumps(data)
-    return len(text.split())
+    try:
+        text = json.dumps(data)
+        return len(text.split())
+    except Exception as e:
+        print(e)
+        pass
 
 
 """
@@ -447,6 +445,8 @@ class Prompt:
     """
 
     def __init__(self):
+        self.image_prompt = None
+        self.image_style = None
         self.format_example = None
         self.context = None
         self.identity = None
@@ -457,7 +457,7 @@ class Prompt:
         self.temperature = 0.7
         self.max_tokens = 512
         self.check_results = {}
-        self.query = ""
+        self.query = None
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
@@ -490,19 +490,53 @@ class Prompt:
         response_list = [x for x in response_list if x]  # remove empty list items
         return response_list
 
-    def generate_image(self, style, path):
+    def generate_image_prompt(self, text, style):
         """
         Generate an image from the prompt.
         """
-        generate_image_from_text(self.prompt, style, path)
+        image_prompt = self.prompt_constructor(query=f"Given the text in brackets below: \n[{text}] \n\n "
+                                                     "Generate a prompt for DallE2 to generate an image. ",
+                                               context=f"Generate a prompt for DallE2 to generate an image. "
+                                                       f"return only the prompt, nothing else",
+                                               format_example="two people are sitting on a bench in a park by a lake")
+
+        style_prompt = self.prompt_constructor(query=f"Given the visual style in brackets below: \n[{style}] \n\n ",
+                                               context=f"generate a long list of one word descriptions of the visual style "
+                                                       f"return only the prompt, nothing else",
+                                               format_example="beautiful, photorealistic, detailed, art, cartoon")
+        full_prompt = generate_text(image_prompt) + " " + generate_text(style_prompt)
+        self.image_prompt = full_prompt
+        return full_prompt
+
+    def generate_image(self, text=None, style=None):
+        """
+        Generate an image from the prompt.
+        """
+        if text is None:
+            text = self.query
+        if self.query is None:
+            text = input("Enter text to generate an image from: ")
+        if style is None:
+            style = self.image_style
+        if self.image_style is None:
+            style = input("Enter style to generate an image from: ")
+        if self.image_prompt is None:
+            self.generate_image_prompt(text=text,
+                                       style=style)
+        filename = f"images/{str(time.time())} - {self.image_prompt.strip('.')}"[:200] + ".png"
+
+
+        image = generate_image(self.image_prompt,
+                               filename=filename)
+        return image
 
     def check(self):
         """
-        check to see if the prompt is offensive, or objectionable in any way using analyse_text and the list
-        stored in self.check_list.
-        :return: a dict() of the results of the analysis for each of the check_list items.
+            check to see if the prompt is offensive, or objectionable in any way using analyse_text and the list
+            stored in self.check_list.
+            :return: a dict() of the results of the analysis for each of the check_list items.
 
-        """
+            """
         self.get_num_tokens()
         self.check_results["num_tokens"] = {"result": self.num_tokens, "evaluation": self.prompt}
         for check in self.check_list:
@@ -551,7 +585,8 @@ class Prompt:
                            f"{self.context}\n "
         if format_example:
             self.prompt += f"Format your response like the example(s) below. " \
-                           f"Do not copy the text from the format example, but only use the format as an example:" \
+                           f"Do not copy the text from the format example, " \
+                           f"but only use the format as an template for how to format the response:" \
                            f"\nFormat:\n" \
                            f"{self.format_example}\n"
         if query:

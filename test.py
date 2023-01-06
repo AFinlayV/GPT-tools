@@ -127,8 +127,48 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 #
 
 def main():
-    pass
+    prompt = ai.Prompt()
+    prompt.query = """
+original text - 
 
+Verse 1
+Love can hit you like a wave 
+It can be a beautiful escape
+But when that wave crashes down
+It can leave you broken and bound
+
+Chorus
+Oh love, oh love, in relationships we trust
+To get us through the good and the bad
+Oh love, oh love, don't let us be crushed
+Come around and make it last
+
+Verse 2
+Sometimes you don't know what to do
+When love can make you feel so blue
+But if you seek out the truth
+You'll find it's worth the fight for you
+
+Chorus
+Oh love, oh love, in relationships we trust
+To get us through the good and the bad
+Oh love, oh love, don't let us be crushed
+Come around and make it last
+
+Bridge
+We'll never give up on the love we share
+Our hearts will always be a pair
+And if we ever have to part
+We'll still hold each other in our heart
+
+Chorus
+Oh love, oh love, in relationships we trust
+To get us through the good and the bad
+Oh love, oh love, don't let us be crushed
+Come around and make it last
+"""
+    prompt.image_style = "cyberpunk"
+    prompt.generate_image()
 
 
 if __name__ == "__main__":
