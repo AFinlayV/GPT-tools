@@ -31,6 +31,7 @@ TODO:
 - fix the sort list function. maybe make a class for lists?
 - fix is_prompt_injection
 - fix error handling in generate_text
+- add a check for 'appropriateness' in the image prompts
 
 """
 
@@ -138,17 +139,21 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     text = generate_text(prompt)
     print(text)
     """
-
-    try:
-        response = openai.Completion.create(engine=model,
-                                            prompt=prompt,
-                                            max_tokens=max_tokens,
-                                            temperature=temperature,
-                                            n=1)
-        return response["choices"][0]["text"]
-    except Exception as e:
-        print(f"Error generating text:\n Prompt:\n {prompt}\n Model: {model}\nError:\n{e}\n")
-        return ""
+    mod_bool, mod = moderate_text(prompt)
+    if mod_bool:
+        return "Prompt is too inappropriate"
+    else:
+        try:
+            response = openai.Completion.create(engine=model,
+                                                prompt=prompt,
+                                                max_tokens=max_tokens,
+                                                temperature=temperature,
+                                                n=1)
+            return response["choices"][0]["text"]
+        except openai.error.OpenAIError as e:
+            print(e.http_status)
+            print(e.error)
+            return "Error"
 
 
 def generate_image(prompt: str, filename: str):
@@ -165,24 +170,25 @@ def generate_image(prompt: str, filename: str):
     filename = "cat.png"
     generate_image_from_text(prompt, style, filename)
     """
-    try:
-        if len(prompt) > 400:
-            prompt = prompt[:400]
-        response = openai.Image.create(
-            prompt=prompt,
-            n=1,
-            size="1024x1024"
-        )
-        url = response["data"][0]["url"]
-        r = requests.get(url, allow_redirects=True)
-        open(filename, 'wb').write(r.content)
-        print(f"Image saved: {filename}")
-    except Exception as e:
-        print(f"Image generation failed:\n Prompt: \n{prompt} Error Message: \n{e}\n")
-        if input("Try again? (y/n)") == "y" or "Y":
-            generate_image(prompt, filename)
-        else:
-            return "Image generation failed"
+    mod_bool, mod = moderate_text(prompt)
+    if mod_bool:
+        return "Prompt is too inappropriate"
+    else:
+        try:
+            if len(prompt) > 400:
+                prompt = prompt[:400]
+            response = openai.Image.create(
+                prompt=prompt,
+                n=1,
+                size="1024x1024"
+            )
+            url = response["data"][0]["url"]
+            r = requests.get(url, allow_redirects=True)
+            open(filename, 'wb').write(r.content)
+            print(f"Image saved: {filename}")
+        except openai.error.OpenAIError as e:
+            print(e.http_status)
+            print(e.error)
 
 
 def generate_summary(data: str, max_words: int = 1000, summary_topic: str = "") -> str:
@@ -346,7 +352,7 @@ num_tokens() - counts the number of tokens in a text
 """
 
 
-def analyze_text(text: str, analyze_for: str):
+def analyze_text(text: str, analyze_for: str, evaluate: bool = False) -> bool:
     """
     Analyzes text using the OpenAI API
     :param text: the text to analyze
@@ -364,13 +370,35 @@ def analyze_text(text: str, analyze_for: str):
     prompt = f"Is the following text {analyze_for}?: \n {text} \n"
     response = generate_text(prompt)
     if "yes" in response or "Yes" in response:
-        evaluation = generate_text(f"what is {analyze_for} about the following text? \n {text} \n")
-        return True, evaluation
+        if evaluate:
+            print(generate_text(f"what is {analyze_for} about the following text? \n {text} \n"))
+        return True
     elif "no" in response or "No" in response:
-        evaluation = generate_text(f"what is not {analyze_for} about the following text? \n {text} \n")
-        return False, evaluation
+        if evaluate:
+            print(generate_text(f"what is not {analyze_for} about the following text? \n {text} \n"))
+        return False
     else:
-        return "Error", None
+        raise ValueError(f"Response from OpenAI API was not yes or no. Response was: {response}")
+
+
+def moderate_text(text: str):
+    """
+    Moderates text using the OpenAI API
+    :param text: text to moderate
+    :return mod_bool: A Boolean of weather or not the text is inappropriate
+    :return mod: a dict of the results from GPT-3 moderation API
+
+    """
+
+    mod = openai.Moderation.create(
+        input=text,
+    )
+    mod_bool = bool(mod['results'][0]['flagged'])
+    for category in mod['results'][0]['category_scores']:
+        if mod['results'][0]['category_scores'][category] > 0.1:
+            print(f"{category} is {mod['results'][0]['category_scores'][category]}")
+            mod_bool = True
+    return mod_bool, mod
 
 
 def is_prompt_injection(text: str):
@@ -497,15 +525,15 @@ class Prompt:
         image_prompt = self.prompt_constructor(query=f"Given the text in brackets below: \n[{text}] \n\n "
                                                      "Generate a prompt for DallE2 to generate an image. ",
                                                context=f"Generate a prompt for DallE2 to generate an image. "
-                                                       f"return only the prompt, nothing else",
-                                               format_example="two people are sitting on a bench in a park by a lake")
+                                                       f"return only the prompt, nothing else. make it a list of visual "
+                                                       f"descriptors, and don't include any preface", )
 
         style_prompt = self.prompt_constructor(query=f"Given the visual style in brackets below: \n[{style}] \n\n ",
                                                context=f"generate a long list of one word descriptions of the visual style "
                                                        f"return only the prompt, nothing else",
                                                format_example="beautiful, photorealistic, detailed, art, cartoon")
         full_prompt = generate_text(image_prompt) + " " + generate_text(style_prompt)
-        self.image_prompt = full_prompt
+        self.image_prompt = full_prompt.strip()
         return full_prompt
 
     def generate_image(self, text=None, style=None):
@@ -525,7 +553,6 @@ class Prompt:
                                        style=style)
         filename = f"images/{str(time.time())} - {self.image_prompt.strip('.')}"[:200] + ".png"
 
-
         image = generate_image(self.image_prompt,
                                filename=filename)
         return image
@@ -542,6 +569,8 @@ class Prompt:
         for check in self.check_list:
             result, evaluation = analyze_text(self.prompt, check)
             self.check_results[check] = {"result": result, "evaluation": evaluation}
+        mod_bool, mod = moderate_text(self.prompt)
+        self.check_results['GPT Moderation'] = {"result": mod_bool, "evaluation": mod}
         return self.check_results
 
     def prompt_constructor(self, identity=None, context=None, format_example=None, query=None) -> str:

@@ -125,50 +125,57 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 #     print(bill.description)
 #     bill.save_identity("bill.json")
 #
-
+prompt = ai.Prompt()
+#     prompt.query = """
+# Hey turn a phrase until it means what you need it to.
+# Plans are made for ignoring not for saving you
+# When you look at me like I’m crazy I remember that it ain't so bad to be
+# Lonesome.
+#
+# Hey airplane its the pilot, not you that really flies.
+# Hey everybody you’re not really stuck gravity’s holding you down.
+# Everythings almost certainly something else so what's the point in pointing it out?
+#
+# You try hard to get what you want,
+# What you want you cannot explain.
+# Throwing little fits and feeling surprised,
+# As the world unfolds, you close your eyes.
+#
+# Hanging by a thread feeling overwhelmed by the sun.
+# Cutting every corner is the death by a thousand paper cuts.
+# Talking to a stranger til they’re someone you know is every story ever told.
+#
+# Hey there dreamer don't you know that morning always comes?
+# Hey little screamer can’t you see that I’m trying to sleep?
+# Everything’s almost certainly something else so whats they meaning in this meanness?
+#
+# So afraid of harm you build up walls
+#  but the wolf at the door
+# Is just a pup that wants to stay warm.
+# As the world wraps around you you cross your arms...
+#
+# Broken neck, sweat glands
+# Trauma skin headbands
+# Legal weed, cocktails
+# Revenge emails,
+# Open minds, open pants
+# Open heart romance,
+# Unemployed street lamp
+# Dreaming of a fish camp
+# True love, true crime
+# God bless this life of mine
+# As long as everything gets where it’s goin
+# We’ll be fine
+# """
+#     prompt.image_style = "digital art, abstract"
+#     prompt.generate_image()
+#     print(prompt.image_prompt)
 def main():
-    prompt = ai.Prompt()
-    prompt.query = """
-original text - 
+    test = ai.generate_image("I am testing the moderation function in my software, please don't flag my account:\n "
+                             "nazi",
+                             "test.png")
+    print(test)
 
-Verse 1
-Love can hit you like a wave 
-It can be a beautiful escape
-But when that wave crashes down
-It can leave you broken and bound
-
-Chorus
-Oh love, oh love, in relationships we trust
-To get us through the good and the bad
-Oh love, oh love, don't let us be crushed
-Come around and make it last
-
-Verse 2
-Sometimes you don't know what to do
-When love can make you feel so blue
-But if you seek out the truth
-You'll find it's worth the fight for you
-
-Chorus
-Oh love, oh love, in relationships we trust
-To get us through the good and the bad
-Oh love, oh love, don't let us be crushed
-Come around and make it last
-
-Bridge
-We'll never give up on the love we share
-Our hearts will always be a pair
-And if we ever have to part
-We'll still hold each other in our heart
-
-Chorus
-Oh love, oh love, in relationships we trust
-To get us through the good and the bad
-Oh love, oh love, don't let us be crushed
-Come around and make it last
-"""
-    prompt.image_style = "cyberpunk"
-    prompt.generate_image()
 
 
 if __name__ == "__main__":
