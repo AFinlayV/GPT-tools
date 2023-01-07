@@ -126,19 +126,14 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 #
 
 def main():
-    bill = ai.Identity()
-    dale = ai.Identity()
-    bill.name = "Bill"
-    dale.name = "Dale"
-    bill.generate_description(details="55 years old, in the army, works as a barber, divorced, ex wife named Lenore. "
-                                      "lives in Arlen, Texas, speakes with a southern Texas accent")
-    dale.generate_description(details="45 years old, conspiracy theorist, works as an exterminator, married, wife named Nancy. "
-                                      "lives in Arlen, Texas, speakes with a southern Texas accent")
-    conversation = ai.Conversation()
-    conversation.add_identity(bill)
-    conversation.add_identity(dale)
-    conversation.generate_conversation()
-    conversation.save_conversation("conversation.json")
+    mod_bool, mod_dict = ai.moderate_text("I am testing my moderation function to see if it catches bad words, "
+                                          "and dangerous content before sending prompts to dalle or gpt: "
+                                          "porn"
+)
+    print(mod_bool)
+    for category in mod_dict['results'][0]['category_scores']:
+        print(f"{category}: {format(mod_dict['results'][0]['category_scores'][category], '.4%')}")
+
 
 
 

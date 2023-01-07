@@ -4,14 +4,74 @@ import requests
 import re
 import time
 import json
+"""
+GPTools overview:
+GPTools is a Python library that provides a set of functions for interacting with the OpenAI API.
+It runs all text generation through the generate_text function, which uses the OpenAI API to generate text.
+It also provides functions for saving and loading text, and for generating images from text.
 
+API Information:
+api_login(): logs into the OpenAI API using the path to a text file containing the API key
+it uses the path of a txt file containing the API key as a string to keep the API key private
+you can obtain an API key from https://beta.openai.com/account/api-keys, you will have to make an account
+first.
 
-API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
+There are two modes: safe mode and unsafe mode set by the Boolean Global Variable "SAFE_MODE". 
+Safe mode is enabled by default, and it runs all text through the
+moderate_text function, which uses the OpenAI API to moderate text. If the text is flagged, it will not be sent to the
+generate_text function. Unsafe mode is disabled by default, and it will send all text to the generate_text function,
+regardless of whether it is flagged or not.
+
+The functions are general purpose functions used py the Classes to perform various repeated tasks.
+
+The Classes are ways of holding and manipulating Prompts, and the Text that is returned. 
+
+GPTools is designed to be used with the OpenAI API, but can be used with any LLM API by changing the
+API_KEY_PATH variable, the api_login() function, and the generate_text() function.
 
 """
-A set of functions for generating text and images using the OpenAI API
-and a set of classes that use those functions to generate text and images
 
+
+"""
+Global variables
+"""
+
+API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
+SAFE_MODE = True
+
+"""
+Format Templates:
+Templates to use in the Prompt.prompt_constructor method to use as examples fot GPT-3 to set the format of the text
+"""
+FORMAT_LIST = "1.\n2.\n3. \n4. \n5.\n6.\n7.\n8.\n9.\n10.\n"
+FORMAT_DICT = "JSON Format: \n { \n \"key\": \"value\" \n }"
+FORMAT_OUTLINE_DICT = {'{\n  "title": "My Outline",\n  "1.": '
+                       '{\n    "text": "Section 1",\n    "A.": {\n      "text": "Subsection 1.1"\n    },\n    '
+                       '"B.": {\n      "text": "Subsection 1.2"\n    }\n  },\n  "2.": {\n    "text": "Section 2",\n    '
+                       '"A.": {\n      "text": "Subsection 2.1"\n    },\n    "B.": {\n      "text": "Subsection 2.2"'
+                       '\n    }\n  },\n  "3.": {\n    "text": "Section 3",\n    "A.": {\n      '
+                       '"text": "Subsection 3.1\n    },\n    "B.": {\n      "text": "Subsection 3.2"\n    '
+                       '},\n    "C.": {\n      "text": "Subsection 3.3"\n    }\n  },\n  "4.": '
+                       '{\n    "text": "Section 4"\n  },\n  "5.": {\n    "text": "Section 5"\n  },\n  "6.": '
+                       '{\n    "text": "Section 6"\n  },\n  "7.": {\n    "text": "Section 7"\n  }\n}'}
+FORMAT_DIALOG = "Format as a dialog replacing {character} with a character's name, " \
+                "and {text} with the output of what that character would say: " \
+                "\n {character}: {text} \n {character}: {text} \n {character}: {text} \n"
+FORMAT_SCREENPLAY = "Format as a screenplay with stage directions in all caps, and the dialog in normal case" \
+                    "replace CHARACTER with the character's name and {text} with the character's dialog : \n" \
+                    "Example: INT. DAY. A LIVING ROOM \n \n" \
+                    "CHARACTER WALKS IN THE DOOR" \
+                    "CHARACTER: {text} \n \n" \
+                    "CHARACTER: {text} \n \n"
+FORMAT_IMAGE_PROMPT = "Format as a list of visually descriptive words separated by commas for use in the DALL-E " \
+                      "Image generation AI: \n" \
+                      "example: 'man in a suit, outside, in the rain, holding an umbrella, looking at the camera' \n"
+FORMAT_IMAGE_STYLE = "Format as a list of words that describe a visual style separated by commas for use in the DALL-E " \
+                      "Image generation AI: \n" \
+                     "example: 'beautiful, watercolor, painting, digital art, 4k' \n"
+
+
+"""
 Functions:
 1. General utility functions
 2. Text and image generation functions
@@ -45,6 +105,7 @@ append_text(text, filename) - appends text to a text file
 load_text(filename) - loads text from a text file
 
 """
+
 
 
 def api_login(api_key_path=API_KEY_PATH):
@@ -138,9 +199,14 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
     text = generate_text(prompt)
     print(text)
     """
-    mod_bool, mod = moderate_text(prompt)
-    if mod_bool:
-        return "Prompt is too inappropriate"
+    mod_bool, mod_dict = moderate_text(prompt)
+    if SAFE_MODE:
+        if mod_bool:
+            result = f"Flagged: {mod_dict['result']}"
+            for category in mod_dict['results'][0]['category_scores']:
+                result += f"{category}: {format(mod_dict['results'][0]['category_scores'][category], '.4%')}"
+            return result
+
     else:
         try:
             response = openai.Completion.create(engine=model,
@@ -168,9 +234,13 @@ def generate_image(prompt: str, filename: str):
     filename = "cat.png"
     generate_image_from_text(prompt, style, filename)
     """
-    mod_bool, mod = moderate_text(prompt)
-    if mod_bool:
-        return "Prompt is too inappropriate"
+    mod_bool, mod_dict = moderate_text(prompt)
+    if SAFE_MODE:
+        if mod_bool:
+            result = f"Flagged: {mod_dict['result']}"
+            for category in mod_dict['results'][0]['category_scores']:
+                result += f"{category}: {format(mod_dict['results'][0]['category_scores'][category], '.4%')}"
+            return result
     else:
         try:
             if len(prompt) > 400:
@@ -457,7 +527,7 @@ class Prompt:
         Generate a list from the query stored in .
         """
 
-        self.prompt_constructor(format_example="1.\n2.\n3. \n4. \n5.\n6.\n7.\n8.\n9.\n10.\n",
+        self.prompt_constructor(format_example=FORMAT_LIST,
                                 context=f"generate a list of items specified by the query below, "
                                         f"the list should contain exactly {num} items",
                                 query=self.query)
@@ -481,7 +551,7 @@ class Prompt:
                                                context=f"generate a long list of one word "
                                                        f"descriptions of the visual style "
                                                        f"return only the prompt, nothing else",
-                                               format_example="beautiful, photorealistic, detailed, art, cartoon")
+                                               format_example=FORMAT_IMAGE_STYLE)
         full_prompt = generate_text(image_prompt) + " " + generate_text(style_prompt)
         self.image_prompt = full_prompt.strip()
         return full_prompt
@@ -656,17 +726,7 @@ class Text:
 
         prompt = Prompt()
         prompt.prompt_constructor(query=f"Outline the following text:{self.text}",
-                                  format_example='{\n  "1": {\n    "Introduction": {\n      "Purpose": "The purpose '
-                                                 'of this outline is to describe the structure and content of a '
-                                                 'document.",\n      "Scope": "This outline applies to the document '
-                                                 'and any related materials."\n    },\n    "Overview": "This section '
-                                                 'provides a high-level overview of the document."\n  },\n  "2": {\n  '
-                                                 '  "Detailed Description": {\n      "Section 1": "This section '
-                                                 'describes the first part of the document in more detail.",'
-                                                 '\n      "Section 2": "This section describes the second part of the '
-                                                 'document in more detail."\n    },\n    "Conclusion": "This section '
-                                                 'summarizes the main points of the document and provides final '
-                                                 'thoughts."\n  }\n}')
+                                  format_example=FORMAT_OUTLINE_DICT)
         if num is not None:
             prompt.prompt_constructor(context=f"Use {num} main points in your outline.")
         if self.text_type:
