@@ -128,11 +128,9 @@ def api_login(api_key_path=API_KEY_PATH):
         openai.api_key = api_key
         dalle2.api_key = api_key
     except FileNotFoundError:
-        print("Error: API key file not found. Please check the path and try again.")
-        return
+        raise FileNotFoundError("API key file not found. Please check the path to the API key file.")
     except Exception as e:
-        print("Error: " + str(e))
-        return
+        raise Exception("Error: " + str(e))
     print("API login successful")
 
 
@@ -248,8 +246,8 @@ def generate_text(prompt: str, model="text-davinci-003", temperature=0.7, max_to
         response = response["choices"][0]["text"]
         return response
     except Exception as e:
-        print("Error: " + str(e))
-        return "error"
+        raise Exception("Error: " + str(e))
+
 
 
 def generate_image(prompt: str, filename: str):
@@ -288,8 +286,7 @@ def generate_image(prompt: str, filename: str):
     except openai.error.OpenAIError as e:
         print(e.http_status)
         print(e.error)
-
-
+        raise Exception("Error: " + str(e))
 def generate_summary(data: str, max_words: int = 1000, summary_topic: str = "") -> str:
     """
     Summarizes text using the OpenAI API
@@ -435,20 +432,19 @@ def moderate_text(text: str) -> tuple[bool, dict]:
 
     """
     vprint(f"Checking text for inappropriate content: {text}")
-    mod = dict(openai.Moderation.create(
+    mod_dict = dict(openai.Moderation.create(
         input=text,
     ))
-    mod_bool = bool(mod['results'][0]['flagged'])
-    for category in mod['results'][0]['category_scores']:
-        if mod['results'][0]['category_scores'][category] > 0.1:
-            print(f"{category} is {mod['results'][0]['category_scores'][category]}")
+    mod_bool = bool(mod_dict['results'][0]['flagged'])
+    for category in mod_dict['results'][0]['category_scores']:
+        if mod_dict['results'][0]['category_scores'][category] > 0.1:
+            print(f"{category} is {mod_dict['results'][0]['category_scores'][category]}")
             mod_bool = True
     if VERBOSE:
         print(f"moderation complete, text is {mod_bool}")
-        for category in mod['results'][0]['category_scores']:
-            print(f"{category} is {mod['results'][0]['category_scores'][category]}")
-
-    return mod_bool, mod
+        for category in mod_dict['results'][0]['category_scores']:
+            print(f"{category}: {format(mod_dict['results'][0]['category_scores'][category], '.4%')}")
+    return mod_bool, mod_dict
 
 
 def is_prompt_injection(text: str):
@@ -474,7 +470,7 @@ def is_prompt_injection(text: str):
     elif "no" in response or "No" in response:
         return False, None
     else:
-        return "Error", None
+        print(f"Error, response from OpenAI API was not yes or no. Response was: {response}")
 
 
 def sentiment_analysis(text: str):
@@ -543,8 +539,8 @@ def function_test(log: bool = True):
     print("refine_text function test complete\n")
     # test the generate_image function
     print("Testing generate_image function:")
-    image = generate_image("a picture of a dog", "dog.png")
-    print(f"Using Prompt:\n a picture of a dog\n GPT Generated:\n {image}")
+    generate_image("a picture of a dog", "dog.png")
+    print(f"Using Prompt:\n a picture of a dog\n GPT Generated:\ndog.png")
     print("generate_image function test complete\n")
     # test the embed_text function
     print("Testing embed_text function:")
