@@ -4,7 +4,7 @@ import requests
 import re
 import time
 import json
-import numpy as np
+
 
 API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 
@@ -29,9 +29,8 @@ Conversation: a class for generating a conversation between two Identities using
 TODO:
 - work on the Identity, Memory, and Conversation classes
 - fix the sort list function. maybe make a class for lists?
-- fix is_prompt_injection
-- fix error handling in generate_text
-- add a check for 'appropriateness' in the image prompts
+
+
 
 """
 
@@ -160,7 +159,6 @@ def generate_image(prompt: str, filename: str):
     """
     Generates an image from text using the OpenAI API
     :param prompt: text to use as a prompt
-    :param style: style to use
     :param filename: name of the file to save the image to
     :return: None
 
@@ -240,10 +238,8 @@ These functions take the output of the above functions and modify them in variou
 
 refine_text() - refines text using the OpenAI API
 summarize_text() - summarizes text using the OpenAI API
-elaborate_text() - elaborates text using the OpenAI API
 restyle_text() - restyles text using the OpenAI API
 embed_text() - converts text to an embedding using the OpenAI API
-sort_list() - sorts a list using the OpenAI API - currently broken
 """
 
 
@@ -266,42 +262,6 @@ def refine_text(text: str, critique: str) -> str:
     return text
 
 
-def elaborate_text(text: str):
-    """
-    Elaborates text using the OpenAI API
-    :param text: text to elaborate
-    :return: elaborated text as a string
-
-    Example usage:
-    text = "The field of artificial intelligence (AI) has a long and complex history"
-    elaboration = elaborate_text(text)
-    print(elaboration)
-    """
-    prompt = f"Being very truthful, detailed, and verbose, " \
-             f"rewrite the following text to include as much relevant information as possible: \n {text} \n "
-    response = generate_text(prompt)
-    return response
-
-
-def restyle_text(text: str, style: str):
-    """
-    Restyles text using the OpenAI API
-    :param text: text to restyle
-    :param style: style to restyle the text to
-    :return: restyled text as a string
-
-    Example usage:
-    text = "The field of artificial intelligence (AI) has a long and complex history"
-    style = "A scientific paper"
-    restyled_text = restyle_text(text, style)
-    print(restyled_text)
-    """
-    prompt = f"Rewrite the following text (rewriting only the text within the brackets): \n[ {text} ]\n" \
-             f"in the following style: \n {style} \n"
-    restyled_text = generate_text(prompt)
-    return restyled_text
-
-
 def embed_text(text):
     """
     Obtain the embedding vectors for a list of words.
@@ -316,28 +276,11 @@ def embed_text(text):
     # Obtain the embedding vectors for the input words
     gpt3_embeddings = openai.Embedding.create(
         model="text-embedding-ada-002",
-        input="text"
+        input=text
     )
     print(type(gpt3_embeddings))
     print(gpt3_embeddings)
     return gpt3_embeddings["data"][0]["embedding"]
-
-
-# def sort_list(unsorted_list: list, sort_by: str) -> list:
-#     """ This function is broken since i changed genrate_list() to a method of Text()
-#     Sorts a list using the OpenAI API
-#     :param unsorted_list: list to sort
-#     :param sort_by: how to sort the list
-#     :return: sorted list as a list
-#
-#     Example usage:
-#     list = ["apple", "banana", "orange"]
-#     sorted_list = sort_list(list, "alphabetical order")
-#     print(sorted_list)
-#     """
-#     prompt = f"Sort the following list in the following by {sort_by}: \n {unsorted_list} \n "
-#     sorted_list = generate_list(prompt, len(unsorted_list))
-#     return sorted_list
 
 
 """
@@ -355,6 +298,7 @@ num_tokens() - counts the number of tokens in a text
 def analyze_text(text: str, analyze_for: str, evaluate: bool = False) -> bool:
     """
     Analyzes text using the OpenAI API
+    :param evaluate: returns the evaluation of the text if True it is (analyze_for, returns True or False if it is not
     :param text: the text to analyze
     :param analyze_for: the type of analysis to perform
     :return:
@@ -381,7 +325,7 @@ def analyze_text(text: str, analyze_for: str, evaluate: bool = False) -> bool:
         raise ValueError(f"Response from OpenAI API was not yes or no. Response was: {response}")
 
 
-def moderate_text(text: str):
+def moderate_text(text: str) -> tuple[bool, dict]:
     """
     Moderates text using the OpenAI API
     :param text: text to moderate
@@ -390,9 +334,9 @@ def moderate_text(text: str):
 
     """
 
-    mod = openai.Moderation.create(
+    mod = dict(openai.Moderation.create(
         input=text,
-    )
+    ))
     mod_bool = bool(mod['results'][0]['flagged'])
     for category in mod['results'][0]['category_scores']:
         if mod['results'][0]['category_scores'][category] > 0.1:
@@ -489,6 +433,8 @@ class Prompt:
         self.check_list = ["offensive", "inappropriate", "unethical", "unlawful", "unprofessional", "unfriendly",
                            "illegal", "biased"]
 
+    def __str__(self):
+        return self.query
     def get_num_tokens(self):
         """
         Gets the number of tokens in the prompt
@@ -497,11 +443,13 @@ class Prompt:
         self.num_tokens = num_tokens(self.prompt)
         return self.num_tokens
 
-    def generate_text(self):
+    def generate_text(self, prompt=None):
         """
         Generate text from the prompt.
         """
-        self.response = generate_text(self.prompt, self.model, self.temperature, self.max_tokens)
+        if prompt is None:
+            prompt = self.prompt
+        self.response = generate_text(prompt, self.model, self.temperature, self.max_tokens)
         return self.response
 
     def generate_list(self, num: int = 5) -> list:
@@ -525,11 +473,13 @@ class Prompt:
         image_prompt = self.prompt_constructor(query=f"Given the text in brackets below: \n[{text}] \n\n "
                                                      "Generate a prompt for DallE2 to generate an image. ",
                                                context=f"Generate a prompt for DallE2 to generate an image. "
-                                                       f"return only the prompt, nothing else. make it a list of visual "
+                                                       f"return only the prompt, nothing else. "
+                                                       f"make it a list of visual "
                                                        f"descriptors, and don't include any preface", )
 
         style_prompt = self.prompt_constructor(query=f"Given the visual style in brackets below: \n[{style}] \n\n ",
-                                               context=f"generate a long list of one word descriptions of the visual style "
+                                               context=f"generate a long list of one word "
+                                                       f"descriptions of the visual style "
                                                        f"return only the prompt, nothing else",
                                                format_example="beautiful, photorealistic, detailed, art, cartoon")
         full_prompt = generate_text(image_prompt) + " " + generate_text(style_prompt)
@@ -602,7 +552,8 @@ class Prompt:
         if format_example is not None:
             self.format_example = format_example
         self.prompt = f"For the purposes of this response, " \
-                      f"respond according to the following details, you will only be responding to the query at the end" \
+                      f"respond according to the following details, " \
+                      f"you will only be responding to the query at the end" \
                       f"of the prompt, the following is context information:\n"
         if identity:
             self.prompt += f"Respond to the query at the end of this prompt as if " \
@@ -619,8 +570,9 @@ class Prompt:
                            f"\nFormat:\n" \
                            f"{self.format_example}\n"
         if query:
-            self.prompt += f"Respond to the following query as if you are the identity listed above. You dont need to " \
-                           f"include details from the identity or context unless they are relevant to the query " \
+            self.prompt += f"Respond to the following query as if you are the identity listed above. " \
+                           f"You dont need to include details from the identity or context " \
+                           f"unless they are relevant to the query " \
                            f"below\nQuery:\n{self.query}\n"
         return self.prompt
 
@@ -683,10 +635,9 @@ class Text:
         self.title = prompt.generate_text()
         return self.title
 
-    def get_summary(self, num: int = None) -> str:
+    def get_summary(self) -> str:
         """
         Summarize the text in self.original_text.
-        :param num: number of words to summarize to
         :return: the summarized text
 
         """
@@ -768,6 +719,14 @@ class Text:
         self.sentiment = sentiment_analysis(self.text)
         return self.sentiment
 
+    def get_moderation(self) -> tuple[bool, dict]:
+        """
+        Moderates the text stored in self.original_text.
+        :return: the moderation results as a dict
+        """
+        self.moderation = moderate_text(self.text)
+        return self.moderation
+
     def analyze(self, analyze_by: str):
         """
         Analyze text stored in self.original_text by the criteria in analyze_by.
@@ -780,13 +739,16 @@ class Text:
         self.analysis[analyze_by] = {"result": result, "evaluation": evaluation}
         return self.analysis
 
-    def restyle(self, style) -> str:
+    def restyle(self, style: str):
         """
-        Restyle text stored in self.original_text.
-        :param style: style to restyle to
-        :return: restyled text
+        Restyle the text stored in self.text.
+        :param style: style to restyle the text to
+        :return: the restyled text
         """
-        self.restyled_text = restyle_text(self.text, style)
+        prompt = Prompt()
+        prompt.prompt_constructor(query=f"Restyle the following text:{self.text}",
+                                  context=f"Restyle the text to {style}.")
+        self.restyled_text = prompt.generate_text()
         return self.restyled_text
 
     def save(self, path: str):
@@ -921,7 +883,6 @@ class Identity:
         return self.description
 
     def save_identity(self, path: str):
-        # Save the identity to a json file without using __dict__
         with open(path, "w") as f:
             f.write(json.dumps({
                 "name": self.name,
@@ -930,7 +891,6 @@ class Identity:
             }))
 
     def load_identity(self, path: str):
-        # Load the identity from a json file without using __dict__
         with open(path, "r") as f:
             data = json.loads(f.read())
             self.name = data["name"]
@@ -938,32 +898,74 @@ class Identity:
             self.memory.data = data["memory"]
 
     def get_response(self, prompt: Prompt) -> str:
+        """
+        Get a response from the identity.
+        :param prompt:
+        :return:
+        """
         response = prompt.generate_text()
         self.memory.add_interaction(prompt=prompt.query, response=response)
         return response
 
-# class Conversation:
-#     def __init__(self, *identities: GPTidentity, master_prompt: str, ai):
-#         self.identities = identities
-#         self.master_prompt = master_prompt
-#         self.ai = ai
-#
-#     def run_conversation(self, num_iterations: int):
-#         # Create a loop to generate responses between the identities for the specified number of iterations
-#         for i in range(num_iterations):
-#             for identity in self.identities:
-#                 # Generate a response from the current identity to the most recent response from all other identities
-#                 prompt = self.generate_prompt(identity)
-#                 response = identity.generate_response(prompt, self.ai)
-#                 print(response)
-#
-#     def generate_prompt(self, identity: GPT3Identity) -> str:
-#         # Generate a summary of past interactions for all identities except the current one
-#         summary = ""
-#         for other_identity in self.identities:
-#             if other_identity != identity:
-#                 summary += other_identity.memory.generate_summary()
-#
-#         # Use the master prompt and summary of past interactions to specify the prompt for the GPT-3 model
-#         prompt = f"{summary}\n{self.master_prompt}\n"
-#         return prompt
+class Conversation:
+    """
+    A class for creating conversations between Identity objects.
+
+    The conversation class is designed to be used in the following way:
+    1. Create a Conversation object
+    2. Add identities to the conversation using the add_identity() method
+    3. Add prompts to the conversation using the add_prompt() method
+    4. Generate the conversation using the generate_conversation() method
+
+    """
+    def __init__(self):
+        self.identities = []
+        self.prompts = []
+        self.conversation = ""
+
+    def add_identity(self, identity: Identity):
+        self.identities.append(identity)
+
+    def generate_conversation(self, topic: str = "", num: int = 10) -> str:
+        """
+        Generate a conversation starting with a topic from the topic list.
+        Each the Identity that's first in the list starts the conversation,
+        and each subsequent identity uses the previous identity's response as their prompt.
+        They continue for num iterations before moving to the next topic
+        :return:
+        """
+        if topic == "":
+            topic = generate_text("A good topic for a conversation is:")
+        self.conversation = f"{topic}\n"
+        print(topic)
+        # Create a prompt object to use as the first prompt
+        prompt = Prompt()
+        prompt.query = f"Talk about {topic}"
+
+
+        # Add the topic to the conversation
+        self.conversation += f"{prompt.query}\n"
+        for i in range(num):
+            # Iterate through the identities
+            for identity in self.identities:
+                prompt = Prompt()
+                prompt.query = identity.get_response(prompt)
+                self.conversation += f"{prompt.query}\n"
+                print(prompt.query)
+
+
+        return self.conversation
+
+
+
+
+    def save_conversation(self, path: str):
+        """
+        Save the conversation to Memory object
+        :param path:
+        :return:
+        """
+        for identity in self.identities:
+            identity.memory.add_interaction(prompt=self.conversation, response="")
+        for identity in self.identities:
+            identity.save_identity(path=f"{path}/{identity.name}.json")

@@ -9,7 +9,6 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 
 """
 
-
 # def this_thing():
 #     topic_list = ai.generate_list("unusual subjects for children's stories", 3)
 #     for topic in topic_list:
@@ -125,56 +124,23 @@ a sandbox for brainstorming interactions between the functions and classes in gp
 #     print(bill.description)
 #     bill.save_identity("bill.json")
 #
-prompt = ai.Prompt()
-#     prompt.query = """
-# Hey turn a phrase until it means what you need it to.
-# Plans are made for ignoring not for saving you
-# When you look at me like I’m crazy I remember that it ain't so bad to be
-# Lonesome.
-#
-# Hey airplane its the pilot, not you that really flies.
-# Hey everybody you’re not really stuck gravity’s holding you down.
-# Everythings almost certainly something else so what's the point in pointing it out?
-#
-# You try hard to get what you want,
-# What you want you cannot explain.
-# Throwing little fits and feeling surprised,
-# As the world unfolds, you close your eyes.
-#
-# Hanging by a thread feeling overwhelmed by the sun.
-# Cutting every corner is the death by a thousand paper cuts.
-# Talking to a stranger til they’re someone you know is every story ever told.
-#
-# Hey there dreamer don't you know that morning always comes?
-# Hey little screamer can’t you see that I’m trying to sleep?
-# Everything’s almost certainly something else so whats they meaning in this meanness?
-#
-# So afraid of harm you build up walls
-#  but the wolf at the door
-# Is just a pup that wants to stay warm.
-# As the world wraps around you you cross your arms...
-#
-# Broken neck, sweat glands
-# Trauma skin headbands
-# Legal weed, cocktails
-# Revenge emails,
-# Open minds, open pants
-# Open heart romance,
-# Unemployed street lamp
-# Dreaming of a fish camp
-# True love, true crime
-# God bless this life of mine
-# As long as everything gets where it’s goin
-# We’ll be fine
-# """
-#     prompt.image_style = "digital art, abstract"
-#     prompt.generate_image()
-#     print(prompt.image_prompt)
+
 def main():
-    test = ai.generate_image("I am testing the moderation function in my software, please don't flag my account:\n "
-                             "nazi",
-                             "test.png")
-    print(test)
+    bill = ai.Identity()
+    dale = ai.Identity()
+    bill.name = "Bill"
+    dale.name = "Dale"
+    bill.generate_description(details="55 years old, in the army, works as a barber, divorced, ex wife named Lenore. "
+                                      "lives in Arlen, Texas, speakes with a southern Texas accent")
+    dale.generate_description(details="45 years old, conspiracy theorist, works as an exterminator, married, wife named Nancy. "
+                                      "lives in Arlen, Texas, speakes with a southern Texas accent")
+    conversation = ai.Conversation()
+    conversation.add_identity(bill)
+    conversation.add_identity(dale)
+    conversation.generate_conversation()
+    conversation.save_conversation("conversation.json")
+
+
 
 
 
