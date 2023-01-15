@@ -23,6 +23,9 @@ The Classes are ways of holding and manipulating Prompts, and the Text that is r
 GPTools is designed to be used with the OpenAI API, but can be used with any LLM API by changing the
 API_KEY_PATH variable, the api_login() function, and the generate_text() function.
 
+!!!- Just discovered the langchain library, which is a wrapper for the OpenAI API. I will be using that instead of the OpenAI API
+directly in the future. It has all the functions I'm trying to build here and more! Once I learn how to use it I'll be
+rewriting this library to use it instead. -!!!
 """
 
 import openai
