@@ -11,17 +11,16 @@ TODO:
     - Generate one question at a time, but save a list of questions so that they are not repeated
 """
 
-
 from langchain import PromptTemplate
 from langchain import OpenAI
+from os import environ
 import json
-import os
 
 OPENAI_API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 with open(OPENAI_API_KEY_PATH, "r") as f:
     OPENAI_API_KEY = f.read().strip()
 
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 quizmaster_template = """Quizmaster is a large language model trained by OpenAI.
 
