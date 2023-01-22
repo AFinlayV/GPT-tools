@@ -3,13 +3,11 @@ from langchain import OpenAI
 import json
 import os
 
-
 OPENAI_API_KEY_PATH = "/Users/alexthe5th/Documents/API Keys/OpenAI_API_key.txt"
 with open(OPENAI_API_KEY_PATH, "r") as f:
     OPENAI_API_KEY = f.read().strip()
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-
 
 quizmaster_template = """Quizmaster is a large language model trained by OpenAI.
 
@@ -17,10 +15,17 @@ Quizmaster is designed Generate quiz questions and answers. As a language model,
 human-like Questions and Answers based on the topic it is given, the number of questions specified, and the dificulty level specified
 
 Generate the questions using the following details:
-
+--------------------
 Topic: {topic}
 Number of Questions: {num_questions}
 Difficulty: {difficulty}
+--------------------
+
+FORMAT:
+List only the question, followed by a "," and then the answer. For example:
+1. What is the capital of France?, Paris
+2. What is the capital of Germany?, Berlin
+
 Quizmaster:"""
 
 quizformat_template = """Quizformatter is a large language model trained by OpenAI.
@@ -40,7 +45,8 @@ Quizgrader is designed to grade quiz questions and answers. Given the Json forma
 Quizgrader will evaluate the Human Input, and compare it to the correct answer. it will return a float value between 0 and 1
 with 1 being a perfect score and 0 being a complete failure. 
 
-Quizgrader will only return a floating point variable and will not return any other data.
+Quizgrader will only return a floating point number between 0 and 1 in the following format:
+0.00
 
 Given the following questions and answers:
 
@@ -56,9 +62,8 @@ Human input:
 ----------------------------------------
 Quizgrader's Evaluation:"""
 
-
-
-llm = OpenAI(temperature=0)
+quiz_llm = OpenAI(model_name="text-davinci-003", temperature=0.9)
+eval_llm = OpenAI(model_name="text-davinci-003", temperature=0)
 
 topic = input("Topic: ")
 num_questions = input("Number of Questions: ")
@@ -68,13 +73,13 @@ quiz_prompt = PromptTemplate(
     template=quizmaster_template
 )
 prompt = quiz_prompt.format(topic=topic, num_questions=num_questions, difficulty=difficulty)
-quiz = llm(prompt)
+quiz = quiz_llm(prompt)
 format_prompt = PromptTemplate(
     input_variables=["quiz"],
     template=quizformat_template
 )
 prompt = format_prompt.format(quiz=quiz)
-json_quiz = json.loads(llm(prompt))
+json_quiz = json.loads(eval_llm(prompt))
 graded_quiz = {}
 for question in json_quiz:
     print(question)
@@ -83,7 +88,7 @@ for question in json_quiz:
         input_variables=["question", "answer", "human_input"],
         template=quizgrader_template)
     prompt = grader_prompt.format(question=question, answer=json_quiz[question], human_input=human_input)
-    grade = float(llm(prompt).strip())
+    grade = float(eval_llm(prompt).strip())
     graded_quiz[question] = {}
     graded_quiz[question]['Answer Provided'] = human_input
     graded_quiz[question]['Correct Answer'] = json_quiz[question]
@@ -98,12 +103,6 @@ for question in graded_quiz:
     Grade: {graded_quiz[question]['Grade']}
     """)
     total_grade += graded_quiz[question]['Grade']
-total_grade = int(total_grade/len(graded_quiz)*100)
+total_grade = int(total_grade / len(graded_quiz) * 100)
 
 print(f"Total Grade: {total_grade}")
-
-
-
-
-
-
