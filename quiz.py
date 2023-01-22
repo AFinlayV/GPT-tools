@@ -9,6 +9,7 @@ TODO:
     - Add a way to use agents, instead of just the LLM
     - Add a way to reference Wolfram Alpha and Google Search
     - Generate one question at a time, but save a list of questions so that they are not repeated
+    - Add a way to load long format text and generate questions about it
 """
 
 from langchain import PromptTemplate
@@ -52,6 +53,7 @@ Quizformatter will take in the following data:
 
 and will output the following json file:
 """
+
 quizgrader_template = """Quizgrader is a large language model trained by OpenAI.
 
 Quizgrader is designed to grade quiz questions and answers. Given the Json format data of the question and answer below
