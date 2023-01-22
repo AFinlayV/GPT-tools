@@ -77,8 +77,15 @@ Human input:
 ----------------------------------------
 Quizgrader's Evaluation:"""
 
-quiz_llm = OpenAI(model_name="text-davinci-003", temperature=0.9)
-eval_llm = OpenAI(model_name="text-davinci-003", temperature=0)
+quiz_llm = OpenAI(
+    model_name="text-davinci-003",
+    temperature=0.9
+)
+
+eval_llm = OpenAI(
+    model_name="text-davinci-003",
+    temperature=0
+)
 
 topic = input("Topic: ")
 num_questions = input("Number of Questions: ")
@@ -87,7 +94,11 @@ quiz_prompt = PromptTemplate(
     input_variables=["topic", "num_questions", "difficulty"],
     template=quizmaster_template
 )
-prompt = quiz_prompt.format(topic=topic, num_questions=num_questions, difficulty=difficulty)
+prompt = quiz_prompt.format(
+    topic=topic,
+    num_questions=num_questions,
+    difficulty=difficulty
+)
 quiz = quiz_llm(prompt)
 format_prompt = PromptTemplate(
     input_variables=["quiz"],
@@ -101,14 +112,18 @@ for question in json_quiz:
     human_input = input("Answer: ")
     grader_prompt = PromptTemplate(
         input_variables=["question", "answer", "human_input"],
-        template=quizgrader_template)
-    prompt = grader_prompt.format(question=question, answer=json_quiz[question], human_input=human_input)
+        template=quizgrader_template
+    )
+    prompt = grader_prompt.format(
+        question=question,
+        answer=json_quiz[question],
+        human_input=human_input
+    )
     grade = float(eval_llm(prompt).strip())
     graded_quiz[question] = {}
     graded_quiz[question]['Answer Provided'] = human_input
     graded_quiz[question]['Correct Answer'] = json_quiz[question]
     graded_quiz[question]['Grade'] = grade
-
 total_grade = 0
 for question in graded_quiz:
     print(f"""
