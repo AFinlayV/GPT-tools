@@ -1,6 +1,7 @@
 """
 A clone of Chat GPT, but with langchain's ability to reference searches, wolfram alpha, and math
 A project to learn the syntax of langchain's modules
+
 """
 from langchain.agents import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory

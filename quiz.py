@@ -1,3 +1,17 @@
+"""
+A Script that generates a quiz, given a topic, a number of questions, and difficulty level.
+It then asks the user the questions and grades the quiz.
+
+TODO:
+    - Add a way to save the quiz to a file
+    - Add a way to load a quiz from a file
+    - Divide the code into functions and add a main function
+    - Add a way to use agents, instead of just the LLM
+    - Add a way to reference Wolfram Alpha and Google Search
+    - Generate one question at a time, but save a list of questions so that they are not repeated
+"""
+
+
 from langchain import PromptTemplate
 from langchain import OpenAI
 import json
