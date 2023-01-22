@@ -86,7 +86,6 @@ eval_llm = OpenAI(
     model_name="text-davinci-003",
     temperature=0
 )
-
 topic = input("Topic: ")
 num_questions = input("Number of Questions: ")
 difficulty = input("Difficulty: ")
